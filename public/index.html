@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library App - Sistema de Biblioteca</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1200px;
+            min-height: 600px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .loading h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .welcome-section {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .welcome-section h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .welcome-section p {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                border-radius: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Library App</h1>
+            <p>Sistema de Gestión de Biblioteca</p>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <h2>Cargando aplicación...</h2>
+                <p>Por favor espera mientras se inicializa el sistema</p>
+            </div>
+
+            <div id="welcome" class="welcome-section" style="display: none;">
+                <h2>¡Bienvenido al Sistema de Biblioteca!</h2>
+                <p>Gestiona libros, lectores, préstamos y multas de manera eficiente y moderna</p>
+
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">📖</div>
+                        <h3>Gestión de Libros</h3>
+                        <p>Administra tu catálogo de libros con funciones completas de CRUD</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">👥</div>
+                        <h3>Control de Lectores</h3>
+                        <p>Registra y gestiona información de todos los usuarios del sistema</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">📋</div>
+                        <h3>Préstamos y Devoluciones</h3>
+                        <p>Controla el flujo de préstamos y devoluciones de manera automatizada</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">⚠️</div>
+                        <h3>Sistema de Multas</h3>
+                        <p>Gestiona multas por retrasos en las devoluciones</p>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="startApp()">Iniciar Aplicación</button>
+                    <a href="#about" class="btn btn-secondary">Conocer Más</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 Library App - Sistema de Biblioteca</p>
+            <p>Desarrollado con ❤️ usando React.js</p>
+        </div>
+    </div>
+
+    <script>
+        // Simular carga de la aplicación
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('welcome').style.display = 'block';
+        }, 2000);
+
+        function startApp() {
+            // Aquí se iniciará la aplicación React
+            // Por ahora mostramos un mensaje
+            if (confirm('¿Estás listo para iniciar la aplicación Library?')) {
+                // Aquí se cargaría React
+                document.body.innerHTML = '<div id="root"></div>';
+                
+                // Cargar los scripts de React
+                const script1 = document.createElement('script');
+                script1.src = 'https://unpkg.com/react@18/umd/react.development.js';
+                document.head.appendChild(script1);
+                
+                const script2 = document.createElement('script');
+                script2.src = 'https://unpkg.com/react-dom@18/umd/react-dom.development.js';
+                document.head.appendChild(script2);
+                
+                // Mensaje temporal
+                setTimeout(() => {
+                    document.getElementById('root').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; font-family: Arial, sans-serif;">
+                            <h1>🚀 Aplicación React Cargada</h1>
+                            <p>Aquí se montará tu aplicación React con todos los componentes.</p>
+                            <p style="color: #666; margin-top: 1rem;">
+                                Ejecuta <code>npm start</code> para iniciar el servidor de desarrollo.
+                            </p>
+                        </div>
+                    `;
+                }, 1000);
+            }
+        }
+
+        // Smooth scroll para enlaces internos
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
