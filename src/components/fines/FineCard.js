@@ -1,91 +1,194 @@
 import React from 'react';
-import '../styles/FineCard.css'; 
-const FineCard = ({ fine, onPayFine, showPayButton = true }) => {
+
+const FineCard = ({ 
+  fine, 
+  onPayFine, 
+  onViewDetails, 
+  onEditFine, 
+  onCancelFine,
+  isAdmin = false 
+}) => {
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-CL', {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
   };
 
-  const handlePayClick = () => {
-    if (onPayFine) {
-      onPayFine(fine.id);
+  const formatCurrency = (amount) => {
+    if (!amount) return '$0';
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP'
+    }).format(amount);
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'PENDING': return 'status-pending';
+      case 'PAID': return 'status-paid';
+      case 'CANCELLED': return 'status-cancelled';
+      case 'OVERDUE': return 'status-overdue';
+      default: return 'status-default';
     }
   };
 
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'PENDING': return 'Pendiente';
+      case 'PAID': return 'Pagada';
+      case 'CANCELLED': return 'Cancelada';
+      case 'OVERDUE': return 'Vencida';
+      default: return status;
+    }
+  };
+
+  const getDaysUntilDue = (dueDate) => {
+    if (!dueDate) return null;
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysUntilDue = getDaysUntilDue(fine.dueDate);
+  const isOverdue = daysUntilDue < 0;
+  const isDueSoon = daysUntilDue <= 7 && daysUntilDue >= 0;
+
   return (
-    <div className={`fine-card ${fine.paid ? 'paid' : 'unpaid'}`}>
-      <div className="fine-header">
-        <div className="fine-status">
-          {fine.paid ? (
-            <span className="status-badge paid">✅ Pagada</span>
-          ) : (
-            <span className="status-badge unpaid">⏰ Pendiente</span>
-          )}
+    <div className={`fine-card ${getStatusClass(fine.status)}`}>
+      <div className="fine-card-header">
+        <div className="fine-id">
+          <span className="label">Multa #:</span>
+          <span className="value">{fine.id}</span>
         </div>
-        <div className="fine-amount">
-          ${fine.amount?.toLocaleString() || '0'}
+        <div className={`fine-status ${getStatusClass(fine.status)}`}>
+          {getStatusText(fine.status)}
         </div>
       </div>
 
-      <div className="fine-body">
+      <div className="fine-card-content">
+        <div className="fine-amount">
+          <span className="amount-label">Monto:</span>
+          <span className="amount-value">{formatCurrency(fine.amount)}</span>
+        </div>
+
         <div className="fine-info">
-          <h4 className="fine-title">{fine.description || 'Multa por retraso'}</h4>
-          
-          <div className="fine-details">
-            <div className="detail-item">
-              <span className="label">Libro:</span>
-              <span className="value">{fine.bookTitle || 'No especificado'}</span>
+          <div className="fine-reason">
+            <span className="label">Razón:</span>
+            <p className="reason-text">{fine.reason || 'Sin especificar'}</p>
+          </div>
+
+          {isAdmin && (
+            <div className="reader-info">
+              <p className="reader-name">
+                <span className="label">Lector:</span> {fine.readerName || 'N/A'}
+              </p>
+              <p className="reader-email">
+                <span className="label">Email:</span> {fine.readerEmail || 'N/A'}
+              </p>
             </div>
-            
-            <div className="detail-item">
-              <span className="label">Fecha de multa:</span>
-              <span className="value">{formatDate(fine.fineDate)}</span>
-            </div>
-            
-            {fine.dueDate && (
-              <div className="detail-item">
-                <span className="label">Fecha de vencimiento:</span>
-                <span className="value">{formatDate(fine.dueDate)}</span>
-              </div>
-            )}
-            
-            {fine.paidDate && (
-              <div className="detail-item">
-                <span className="label">Fecha de pago:</span>
-                <span className="value">{formatDate(fine.paidDate)}</span>
-              </div>
-            )}
-            
-            {fine.daysOverdue && (
-              <div className="detail-item">
-                <span className="label">Días de retraso:</span>
-                <span className="value">{fine.daysOverdue} días</span>
-              </div>
+          )}
+
+          <div className="loan-info">
+            <p className="loan-id">
+              <span className="label">Préstamo:</span> #{fine.loanId}
+            </p>
+            {fine.bookTitle && (
+              <p className="book-title">
+                <span className="label">Libro:</span> {fine.bookTitle}
+              </p>
             )}
           </div>
         </div>
 
-        {showPayButton && !fine.paid && (
-          <div className="fine-actions">
-            <button 
-              onClick={handlePayClick}
-              className="pay-btn"
-              title="Pagar multa"
-            >
-              💳 Pagar Multa
-            </button>
+        <div className="fine-dates">
+          <div className="creation-date">
+            <span className="label">Fecha Creación:</span>
+            <span className="value">{formatDate(fine.createdDate)}</span>
           </div>
+          <div className="due-date">
+            <span className="label">Fecha Vencimiento:</span>
+            <span className={`value ${isOverdue ? 'overdue' : isDueSoon ? 'due-soon' : ''}`}>
+              {formatDate(fine.dueDate)}
+            </span>
+          </div>
+          {fine.paidDate && (
+            <div className="paid-date">
+              <span className="label">Fecha Pago:</span>
+              <span className="value">{formatDate(fine.paidDate)}</span>
+            </div>
+          )}
+        </div>
+
+        {fine.status === 'PENDING' && (
+          <div className="fine-alert">
+            {isOverdue && (
+              <div className="alert alert-danger">
+                <strong>¡Multa vencida!</strong> {Math.abs(daysUntilDue)} días de retraso
+              </div>
+            )}
+            {isDueSoon && !isOverdue && (
+              <div className="alert alert-warning">
+                <strong>¡Próxima a vencer!</strong> {daysUntilDue} días restantes
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="fine-card-actions">
+        <button 
+          className="btn btn-info"
+          onClick={() => onViewDetails && onViewDetails(fine)}
+        >
+          Ver Detalles
+        </button>
+
+        {fine.status === 'PENDING' && (
+          <>
+            <button 
+              className="btn btn-success"
+              onClick={() => onPayFine && onPayFine(fine.id)}
+            >
+              Pagar Multa
+            </button>
+            
+            {isAdmin && (
+              <>
+                <button 
+                  className="btn btn-warning"
+                  onClick={() => onEditFine && onEditFine(fine)}
+                >
+                  Editar
+                </button>
+                <button 
+                  className="btn btn-danger"
+                  onClick={() => onCancelFine && onCancelFine(fine.id)}
+                >
+                  Cancelar
+                </button>
+              </>
+            )}
+          </>
         )}
       </div>
 
       {fine.notes && (
         <div className="fine-notes">
-          <small>
-            <strong>Notas:</strong> {fine.notes}
-          </small>
+          <span className="label">Notas:</span>
+          <p>{fine.notes}</p>
+        </div>
+      )}
+
+      {fine.paymentMethod && fine.status === 'PAID' && (
+        <div className="payment-info">
+          <span className="label">Método de Pago:</span>
+          <span className="value">{fine.paymentMethod}</span>
         </div>
       )}
     </div>

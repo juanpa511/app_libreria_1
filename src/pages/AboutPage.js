@@ -13,9 +13,9 @@ const AboutPage = () => {
     {
       name: 'Juan Andres Meza',
       role: 'Desarrolladora Backend',
-      email: 'juan@gmail.com',
+      email: 'juan.meza@alu.ucm.cl',
       description: 'Experta en Spring Boot y arquitectura de APIs REST.',
-      avatar: '👩‍💻'
+      avatar: '👨‍💻'
     }
   ];
 

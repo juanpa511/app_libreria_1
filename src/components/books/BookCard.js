@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/BookCard.css'; 
+import '../../styles/BookCard.css'; 
 
 const BookCard = ({ book, onBorrow, onEdit, onDelete, userRole, showActions = true }) => {
   const handleBorrow = () => {

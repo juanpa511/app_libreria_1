@@ -3,7 +3,7 @@ import BookCard from './BookCard';
 import BookFilter from './BookFilter';
 import LoadingSpinner from '../common/LoadingSpinner';
 import bookService from '../../services/bookService';
-import '../styles/BookList.css'; 
+import '../../styles/BookList.css'; 
 
 const BookList = () => {
   const [books, setBooks] = useState([]);

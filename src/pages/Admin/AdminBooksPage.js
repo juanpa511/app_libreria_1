@@ -5,7 +5,7 @@ import BookList from '../../components/books/BookList';
 import BookForm from '../../components/books/BookForm';
 import BookFilter from '../../components/books/BookFilter';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import './../styles/AdminBooksPage.css'; 
+import '../../styles/AdminBooksPage.css'; 
 
 const AdminBooksPage = () => {
   const [books, setBooks] = useState([]);

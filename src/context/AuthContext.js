@@ -227,3 +227,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// Exportar también el contexto para casos específicos
+export { AuthContext };

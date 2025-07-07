@@ -3,7 +3,7 @@ import { useApi } from '../hooks/useApi';
 import loanService from '../services/loanService';
 import LoanList from '../components/loans/LoanList';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import '../styles/AdminLoansPage.css';
+import '../../styles/AdminLoansPage.css';
 
 const AdminLoansPage = () => {
   const [loans, setLoans] = useState([]);

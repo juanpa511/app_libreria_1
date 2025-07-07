@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../styles/BookFilter.css';
+import '../../styles/BookFilter.css';
 
 const BookFilter = ({ onFilterChange, onSearchChange }) => {
   const [filters, setFilters] = useState({

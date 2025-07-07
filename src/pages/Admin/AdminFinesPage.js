@@ -4,7 +4,7 @@ import fineService from '../../services/fineService';
 import FineList from '../../components/fines/FineList';
 import FineForm from '../components/fines/FineForm';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import '../styles/AdminFinesPage.css';
+import '../../styles/AdminFinesPage.css';
 
 const AdminFinesPage = () => {
   const [fines, setFines] = useState([]);
