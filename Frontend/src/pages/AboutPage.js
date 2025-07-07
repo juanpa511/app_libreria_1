@@ -25,67 +25,6 @@ const AboutPage = () => {
         {/* Hero Section */}
         <section className="about-hero">
           <h1>Acerca de Nosotros</h1>
-          <p className="hero-subtitle">
-            Somos un equipo apasionado por la tecnología y la educación, 
-            trabajando juntos para crear soluciones innovadoras en el mundo digital.
-          </p>
-        </section>
-
-        {/* Mission Section */}
-        <section className="mission-section">
-          <div className="mission-content">
-            <h2>Nuestra Misión</h2>
-            <p>
-              Facilitar el acceso al conocimiento mediante una plataforma digital 
-              intuitiva y eficiente que conecte a lectores con una amplia variedad 
-              de recursos bibliográficos.
-            </p>
-          </div>
-          <div className="mission-image">
-            <span className="mission-icon">🎯</span>
-          </div>
-        </section>
-
-        {/* Vision Section */}
-        <section className="vision-section">
-          <div className="vision-image">
-            <span className="vision-icon">🚀</span>
-          </div>
-          <div className="vision-content">
-            <h2>Nuestra Visión</h2>
-            <p>
-              Convertirnos en la plataforma líder de gestión bibliotecaria, 
-              promoviendo la lectura y el aprendizaje continuo a través de 
-              tecnologías innovadoras.
-            </p>
-          </div>
-        </section>
-
-        {/* Values Section */}
-        <section className="values-section">
-          <h2>Nuestros Valores</h2>
-          <div className="values-grid">
-            <div className="value-card">
-              <div className="value-icon">🤝</div>
-              <h3>Colaboración</h3>
-              <p>Trabajamos en equipo para lograr objetivos comunes</p>
-            </div>
-            <div className="value-card">
-              <div className="value-icon">💡</div>
-              <h3>Innovación</h3>
-              <p>Buscamos constantemente mejores formas de hacer las cosas</p>
-            </div>
-            <div className="value-card">
-              <div className="value-icon">🎓</div>
-              <h3>Aprendizaje</h3>
-              <p>Promovemos el crecimiento personal y profesional continuo</p>
-            </div>
-            <div className="value-card">
-              <div className="value-icon">🌟</div>
-              <h3>Excelencia</h3>
-              <p>Nos esforzamos por entregar la mejor calidad en todo lo que hacemos</p>
-            </div>
-          </div>
         </section>
 
         {/* Team Section */}
@@ -170,23 +109,12 @@ const AboutPage = () => {
             </div>
             <div className="academic-card">
               <h3>Evaluación</h3>
+              <p>Evaluación 2 - 40%</p>
               <p>Evaluación 3 - 40%</p>
             </div>
           </div>
         </section>
 
-        {/* Contact Section */}
-        <section className="contact-section">
-          <h2>¿Tienes Preguntas?</h2>
-          <p>
-            Si tienes alguna pregunta sobre el proyecto o quieres saber más 
-            sobre nuestro trabajo, no dudes en contactarnos.
-          </p>
-          <div className="contact-info">
-            <p>📧 Email: equipo@biblioteca.com</p>
-            <p>🌐 GitHub: github.com/biblioteca-proyecto</p>
-          </div>
-        </section>
       </div>
     </div>
   );

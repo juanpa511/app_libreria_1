@@ -1,0 +1,347 @@
+/* Footer.css */
+
+.footer {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  padding: 60px 0 20px;
+  margin-top: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+.footer .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.footer-section:nth-child(1) { animation-delay: 0.1s; }
+.footer-section:nth-child(2) { animation-delay: 0.2s; }
+.footer-section:nth-child(3) { animation-delay: 0.3s; }
+.footer-section:nth-child(4) { animation-delay: 0.4s; }
+
+/* Logo y descripción */
+.footer-logo {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #e0e8ff;
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+/* Títulos de sección */
+.footer-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #fff;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.footer-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+  border-radius: 2px;
+}
+
+/* Enlaces */
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-link {
+  color: #e0e8ff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  padding: 5px 0;
+  position: relative;
+  display: inline-block;
+}
+
+.footer-link::before {
+  content: '→';
+  position: absolute;
+  left: -20px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  color: #4ecdc4;
+}
+
+.footer-link:hover {
+  color: #fff;
+  transform: translateX(15px);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.footer-link:hover::before {
+  opacity: 1;
+  left: -15px;
+}
+
+/* Servicios - para los span */
+.footer-section .footer-link:not([href]) {
+  cursor: default;
+  color: #d0d8ff;
+}
+
+.footer-section .footer-link:not([href]):hover {
+  color: #fff;
+  transform: translateX(10px);
+}
+
+/* Sección de contacto */
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 0.9rem;
+  color: #e0e8ff;
+  transition: all 0.3s ease;
+}
+
+.contact-icon {
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+}
+
+.contact-item:hover {
+  color: #fff;
+  transform: translateX(5px);
+}
+
+/* Separador */
+.footer-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  margin: 40px 0;
+}
+
+/* Parte inferior */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-top: 20px;
+}
+
+.footer-copyright {
+  flex: 1;
+}
+
+.footer-copyright p {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #d0d8ff;
+}
+
+.footer-credits {
+  font-size: 0.85rem !important;
+  color: #b0c4ff !important;
+  font-style: italic;
+}
+
+.footer-tech {
+  display: flex;
+  align-items: center;
+}
+
+.tech-stack {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b0c4ff;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.tech-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.tech-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividad */
+@media (max-width: 992px) {
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 0 20px;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    text-align: center;
+  }
+  
+  .footer-logo {
+    justify-content: center;
+  }
+  
+  .footer-title::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .footer-link::before {
+    display: none;
+  }
+  
+  .footer-link:hover {
+    transform: translateX(0);
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .tech-stack {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer .container {
+    padding: 0 15px;
+  }
+  
+  .footer-content {
+    gap: 25px;
+  }
+  
+  .footer-logo {
+    font-size: 1.6rem;
+  }
+  
+  .tech-stack {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .tech-item {
+    padding: 8px 16px;
+  }
+}
+
+/* Efectos adicionales */
+.footer-link:focus {
+  outline: 2px solid #4ecdc4;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Hover en toda la sección */
+.footer-section:hover .footer-title::after {
+  width: 60px;
+  transition: width 0.3s ease;
+}
+
+/* Estilo alternativo para modo oscuro */
+.footer.dark-theme {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.footer.dark-theme .footer-title::after {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .footer-section {
+    animation: none;
+  }
+  
+  .footer-link,
+  .contact-item,
+  .tech-item {
+    transition: none;
+  }
+}
