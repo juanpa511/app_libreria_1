@@ -2,6 +2,7 @@ package com.tallerjj.apirest.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "rol")
@@ -14,4 +15,7 @@ public class Rol {
     private Integer idRol;
 
     private String name;
+
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    private Set<User> users;
 } 

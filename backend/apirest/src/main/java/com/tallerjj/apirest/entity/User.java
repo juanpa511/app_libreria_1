@@ -3,6 +3,7 @@ package com.tallerjj.apirest.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -25,4 +26,10 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "rol_id_rol")
     )
     private Set<Rol> roles;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Booking> bookings;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Fine> fines;
 } 
