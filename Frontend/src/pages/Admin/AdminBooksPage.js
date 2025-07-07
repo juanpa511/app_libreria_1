@@ -5,6 +5,7 @@ import BookList from '../../components/books/BookList';
 import BookForm from '../../components/books/BookForm';
 import BookFilter from '../../components/books/BookFilter';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Layout from '../../components/common/Layout';
 import '../../styles/AdminBooksPage.css'; 
 
 const AdminBooksPage = () => {
@@ -152,6 +153,7 @@ const AdminBooksPage = () => {
 
   if (showForm) {
     return (
+      <Layout>
       <div className="admin-books-page">
         <div className="page-header">
           <button 
@@ -168,10 +170,12 @@ const AdminBooksPage = () => {
           loading={loading}
         />
       </div>
+      </Layout>
     );
   }
 
   return (
+    <Layout>
     <div className="admin-books-page">
       <div className="page-header">
         <h1>Administrar Libros</h1>
@@ -246,6 +250,7 @@ const AdminBooksPage = () => {
         />
       )}
     </div>
+    </Layout>
   );
 };
 
