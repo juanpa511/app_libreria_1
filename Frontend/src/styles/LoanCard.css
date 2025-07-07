@@ -1,0 +1,119 @@
+.loan-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  padding: 1.5rem;
+  border-left: 4px solid #4CAF50;
+  transition: transform 0.2s ease;
+}
+
+.loan-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.loan-card.overdue {
+  border-left-color: #f44336;
+  background-color: #fff5f5;
+}
+
+.loan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.loan-card-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.loan-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.loan-card:not(.overdue) .loan-status {
+  background-color: #e8f5e8;
+  color: #4CAF50;
+}
+
+.loan-card.overdue .loan-status {
+  background-color: #ffebee;
+  color: #f44336;
+}
+
+.loan-card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.loan-info {
+  flex: 1;
+}
+
+.loan-info p {
+  margin: 0.5rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.loan-info strong {
+  color: #333;
+}
+
+.loan-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-return {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-return:hover {
+  background-color: #1976D2;
+}
+
+.loan-card.overdue .btn-return {
+  background-color: #f44336;
+}
+
+.loan-card.overdue .btn-return:hover {
+  background-color: #d32f2f;
+}
+
+@media (max-width: 768px) {
+  .loan-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .loan-card-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .loan-actions {
+    justify-content: center;
+    margin-top: 1rem;
+  }
+}
