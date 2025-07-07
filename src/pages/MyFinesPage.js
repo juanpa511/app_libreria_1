@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import fineService from '../../services/fineService';
-import FineCard from '../fines/FineCard';
-import LoadingSpinner from '../common/LoadingSpinner';
+import fineService from '../services/fineService';
+import FineCard from '../components/fines/FineCard';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import '../styles/MyFinesPage.css'; 
 
 const MyFinesPage = () => {

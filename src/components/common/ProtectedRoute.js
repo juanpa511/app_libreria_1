@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import LoadingSpinner from './LoadingSpinner';
 
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ children, requiredRole, requireAdmin }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -21,28 +21,40 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Si se requiere un rol específico y el usuario no lo tiene
+  // Validar acceso por rol requerido explícito
   if (requiredRole && user.role !== requiredRole) {
     return (
-      <div className="access-denied">
-        <div className="access-denied-content">
-          <h2>Acceso Denegado</h2>
-          <p>No tienes permisos para acceder a esta página.</p>
-          <p>Rol requerido: {requiredRole}</p>
-          <p>Tu rol actual: {user.role}</p>
-          <button 
-            onClick={() => window.history.back()}
-            className="back-button"
-          >
-            Volver
-          </button>
-        </div>
-      </div>
+      <AccessDenied required={requiredRole} current={user.role} />
     );
   }
 
-  // Si todo está bien, renderizar el componente hijo
+  // Validar acceso si se pide admin
+  if (requireAdmin && user.role !== 'admin') {
+    return (
+      <AccessDenied required="admin" current={user.role} />
+    );
+  }
+
+  // Acceso permitido
   return children;
 };
+
+// Subcomponente para acceso denegado
+const AccessDenied = ({ required, current }) => (
+  <div className="access-denied">
+    <div className="access-denied-content">
+      <h2>Acceso Denegado</h2>
+      <p>No tienes permisos para acceder a esta página.</p>
+      <p>Rol requerido: {required}</p>
+      <p>Tu rol actual: {current}</p>
+      <button 
+        onClick={() => window.history.back()}
+        className="back-button"
+      >
+        Volver
+      </button>
+    </div>
+  </div>
+);
 
 export default ProtectedRoute;

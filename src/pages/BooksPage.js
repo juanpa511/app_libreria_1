@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import BookCard from '../components/books/BookCard';
 import BookFilter from '../components/books/BookFilter';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -15,7 +15,7 @@ const BooksPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [booksPerPage] = useState(12);
   
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
 
   useEffect(() => {
     loadBooks();

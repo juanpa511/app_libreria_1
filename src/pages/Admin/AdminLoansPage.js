@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useApi } from '../hooks/useApi';
-import loanService from '../services/loanService';
-import LoanList from '../components/loans/LoanList';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { useApi } from '../../hooks/useApi';
+import loanService from '../../services/loanService';
+import LoanList from '../../components/Loans/LoanList';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import '../../styles/AdminLoansPage.css';
 
 const AdminLoansPage = () => {

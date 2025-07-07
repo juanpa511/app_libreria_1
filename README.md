@@ -40,10 +40,14 @@ src/
 │   │   ├── Header.js
 │   │   ├── LoadingSpinner.js
 │   │   └── Navigation.js
+│   │   └── ProtectedRoute.js
 │   ├── fines/
 │   │   ├── FineCard.js
 │   │   ├── FineForm.js
 │   │   └── FineList.js
+│   ├── Form/
+│   │   ├── FineForm.js
+│   │   ├── ReturnForm.js
 │   ├── loans/
 │   │   ├── LoanCard.js
 │   │   ├── LoanForm.js

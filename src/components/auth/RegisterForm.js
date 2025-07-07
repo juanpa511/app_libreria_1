@@ -7,14 +7,15 @@ import '../../styles/RegisterPage.css';
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
     name: '',
+    LastName: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    phone: '',
-    address: ''
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -58,16 +59,6 @@ const RegisterForm = () => {
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Las contraseñas no coinciden';
     }
-
-    if (!formData.phone) {
-      newErrors.phone = 'El teléfono es requerido';
-    } else if (!/^\d{8,15}$/.test(formData.phone)) {
-      newErrors.phone = 'El teléfono debe tener entre 8 y 15 dígitos';
-    }
-
-    if (!formData.address) {
-      newErrors.address = 'La dirección es requerida';
-    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -105,10 +96,9 @@ const RegisterForm = () => {
   return (
     <div className="register-form-container">
       <div className="register-form-card">
-        <h2>Crear Cuenta</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="name">Nombre Completo</label>
+            <label htmlFor="name">Nombre</label>
             <input
               type="text"
               id="name"
@@ -120,6 +110,21 @@ const RegisterForm = () => {
             />
             {errors.name && <span className="error-message">{errors.name}</span>}
           </div>
+
+          <div className="form-group">
+            <label htmlFor="name">Apellido</label>
+            <input
+              type="text"
+              id="LastName"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={errors.name ? 'error' : ''}
+              placeholder="Ingresa tu nombre completo"
+            />
+            {errors.name && <span className="error-message">{errors.name}</span>}
+          </div>
+
 
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -135,59 +140,49 @@ const RegisterForm = () => {
             {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="phone">Teléfono</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className={errors.phone ? 'error' : ''}
-              placeholder="Ingresa tu teléfono"
-            />
-            {errors.phone && <span className="error-message">{errors.phone}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="address">Dirección</label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              className={errors.address ? 'error' : ''}
-              placeholder="Ingresa tu dirección"
-            />
-            {errors.address && <span className="error-message">{errors.address}</span>}
-          </div>
-
-          <div className="form-group">
+         <div className="form-group">
             <label htmlFor="password">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? 'error' : ''}
-              placeholder="Ingresa tu contraseña"
-            />
+            <div className="input-with-icon">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={errors.password ? 'error' : ''}
+                placeholder="Ingresa tu contraseña"
+              />
+              <span
+                className="eye-icon"
+                onClick={() => setShowPassword(!showPassword)}
+                role="button"
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </span>
+            </div>
             {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
 
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirmar Contraseña</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={errors.confirmPassword ? 'error' : ''}
-              placeholder="Confirma tu contraseña"
-            />
+            <div className="input-with-icon">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={errors.confirmPassword ? 'error' : ''}
+                placeholder="Confirma tu contraseña"
+              />
+              <span
+                className="eye-icon"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                role="button"
+              >
+                {showConfirmPassword ? '🙈' : '👁️'}
+              </span>
+            </div>
             {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
           </div>
 
@@ -205,7 +200,6 @@ const RegisterForm = () => {
         </form>
 
         <div className="register-footer">
-          <p>¿Ya tienes una cuenta? <Link to="/login">Inicia sesión aquí</Link></p>
         </div>
       </div>
     </div>

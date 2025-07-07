@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 import '../../styles/LoginPage.css'; 
@@ -20,7 +20,6 @@ const LoginForm = () => {
       ...prev,
       [name]: value
     }));
-    // Limpiar errores cuando el usuario empieza a escribir
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -50,19 +49,25 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+
+    if (!validateForm()) return;
 
     setIsLoading(true);
     try {
-      await login(credentials);
-      navigate('/dashboard');
+      const result = await login(credentials.email, credentials.password);
+      if (result.success) {
+        const user = JSON.parse(localStorage.getItem('user'));
+
+        if (user?.role === 'admin') {
+          navigate('/admin/books');
+        } else {
+          navigate('/books');
+        }
+      } else {
+        setErrors({ submit: result.error || 'Error al iniciar sesión' });
+      }
     } catch (error) {
-      setErrors({ 
-        submit: error.message || 'Error al iniciar sesión' 
-      });
+      setErrors({ submit: error.message || 'Error al iniciar sesión' });
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +76,6 @@ const LoginForm = () => {
   return (
     <div className="login-form-container">
       <div className="login-form-card">
-        <h2>Iniciar Sesión</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -115,7 +119,6 @@ const LoginForm = () => {
         </form>
 
         <div className="login-footer">
-          <p>¿No tienes una cuenta? <Link to="/register">Regístrate aquí</Link></p>
         </div>
       </div>
     </div>

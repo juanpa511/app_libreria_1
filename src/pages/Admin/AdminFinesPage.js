@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import fineService from '../../services/fineService';
 import FineList from '../../components/fines/FineList';
-import FineForm from '../components/fines/FineForm';
+import FineForm from '../../components/fines/FineForm';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import '../../styles/AdminFinesPage.css';
 

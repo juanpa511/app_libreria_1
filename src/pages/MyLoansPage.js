@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import loanService from '../services/loanService';
-import { fineService } from '../services/fineService';
+import FineCard from '../components/fines/FineCard';
+import fineService from '../services/fineService';
 import '../styles/MyLoansPage.css'; 
 
 const MyLoansPage = () => {
@@ -11,7 +12,7 @@ const MyLoansPage = () => {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // all, active, returned, overdue
   
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
 
   useEffect(() => {
     loadMyLoans();

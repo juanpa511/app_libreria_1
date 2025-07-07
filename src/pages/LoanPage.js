@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import loanService from '../services/loanService';
-import readerService from '../../services/readerService';
-import bookService from '../../services/bookService';
-import LoanCard from '../loans/LoanCard';
-import LoadingSpinner from '../common/LoadingSpinner';
+import readerService from '../services/readerService';
+import bookService from '../services/bookService';
+import LoanCard from '../components/Loans/LoanCard';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import '../styles/LoanPage.css';
 
 const LoanPage = () => {
