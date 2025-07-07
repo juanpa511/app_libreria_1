@@ -9,7 +9,17 @@ import java.util.List;
 @Repository
 public interface FineRepository extends JpaRepository<Fine, Long> {
     
-    // TODO: Implementar cuando se necesite
-    // List<Fine> findByUserEmail(String email);
-    // List<Fine> findByUserEmailAndStateTrue(String email);
+    /**
+     * Busca todas las multas de un usuario por su email
+     * @param email email del usuario
+     * @return lista de multas del usuario
+     */
+    List<Fine> findByUserEmail(String email);
+    
+    /**
+     * Busca multas activas de un usuario por su email
+     * @param email email del usuario
+     * @return lista de multas activas del usuario
+     */
+    List<Fine> findByUserEmailAndStateTrue(String email);
 } 

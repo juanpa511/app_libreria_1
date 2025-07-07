@@ -19,10 +19,10 @@ public class Booking {
     private boolean state;
 
     @ManyToOne
-    @JoinColumn(name = "copybook_id_copybook")
+    @JoinColumn(name = "copybook_fk")
     private CopyBook copyBook;
 
     @ManyToOne
-    @JoinColumn(name = "user_email")
+    @JoinColumn(name = "user_fk")
     private User user;
 } 

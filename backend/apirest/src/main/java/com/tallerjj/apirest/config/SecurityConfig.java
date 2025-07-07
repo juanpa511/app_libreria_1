@@ -55,9 +55,8 @@ public class SecurityConfig {
                 .requestMatchers("/book/new", "/book/find/**", "/book/newcopy", "/book/copy/**").hasRole("ADMIN")
                 .requestMatchers("/booking/new", "/booking/return/**").hasRole("ADMIN")
                 .requestMatchers("/reader/find/**", "/reader/state/**").hasRole("ADMIN")
-                .requestMatchers("/fine/find/**").hasRole("ADMIN")
                 
-                // Endpoints de LECTOR
+                // Endpoints compartidos (ADMIN y LECTOR)
                 .requestMatchers("/booking/find/**").hasAnyRole("ADMIN", "LECTOR")
                 .requestMatchers("/fine/find/**").hasAnyRole("ADMIN", "LECTOR")
                 

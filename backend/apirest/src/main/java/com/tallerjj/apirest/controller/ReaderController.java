@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/reader")
 @CrossOrigin(origins = "*")
@@ -33,14 +35,47 @@ public class ReaderController {
      * Cambia el estado de un lector (ADMIN)
      * POST /api/reader/state/{email}
      * @param email email del lector
-     * @param stateData datos del estado
+     * @param stateRequest datos del estado
      * @return confirmación del cambio de estado
      */
     @PostMapping("/state/{email}")
-    public ResponseEntity<String> changeReaderState(@PathVariable String email, @RequestBody Object stateData) {
-        // TODO: Implementar lógica para cambiar estado del lector
-        return ResponseEntity.ok("Estado del lector actualizado exitosamente");
+    public ResponseEntity<?> changeReaderState(@PathVariable String email, @RequestBody StateRequest stateRequest) {
+        try {
+            // 1. Verificar que el usuario existe
+            Optional<User> userOpt = userRepository.findById(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("El usuario especificado no existe");
+            }
+            
+            User user = userOpt.get();
+            
+            // 2. Cambiar el estado del usuario
+            user.setState(stateRequest.isState());
+            
+            // 3. Guardar los cambios
+            userRepository.save(user);
+            
+            // 4. Preparar respuesta
+            String estado = stateRequest.isState() ? "activo" : "inactivo";
+            return ResponseEntity.ok("Estado del lector " + email + " actualizado a " + estado + " exitosamente");
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al cambiar el estado del lector: " + e.getMessage());
+        }
     }
 
     
+}
+
+// Clase auxiliar para recibir los datos del estado
+class StateRequest {
+    private boolean state;
+    
+    public boolean isState() {
+        return state;
+    }
+    
+    public void setState(boolean state) {
+        this.state = state;
+    }
 } 
