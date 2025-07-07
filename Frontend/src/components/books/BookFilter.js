@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import '../../styles/BookFilter.css';
 
-const BookFilter = ({ onFilterChange, onSearchChange }) => {
+const BookFilter = ({ onFilterChange, onSearchChange, filters: initialFilters = {} }) => {
   const [filters, setFilters] = useState({
-    type: '',
-    status: '',
-    genre: '',
-    year: ''
+    type: initialFilters.type || '',
+    status: initialFilters.status || '',
+    genre: initialFilters.genre || '',
+    year: initialFilters.year || ''
   });
   const [searchTerm, setSearchTerm] = useState('');
 

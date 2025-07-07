@@ -53,11 +53,11 @@ const BookCard = ({ book, onBorrow, onEdit, onDelete, userRole, showActions = tr
   return (
     <div className="book-card">
       <div className="book-image">
-        {book.imageUrl ? (
-          <img src={book.imageUrl} alt={book.title} />
-        ) : (
-          <div className="book-placeholder">
-            <span>📚</span>
+      {book.imagen64 ? (
+        <img src={`data:image/jpeg;base64,${book.imagen64}`} alt={book.title} />
+          ) : (
+            <div className="book-placeholder">
+             <span>📚</span>
           </div>
         )}
       </div>

@@ -1,5 +1,22 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect,   } from 'react';
 import { authService } from '../services/authService';
+
+const MOCK_USERS = {
+  'admin@test.com': {
+    id: 1,
+    email: 'admin@test.com',
+    name: 'Administrador',
+    role: 'admin',
+    password: 'admin123'
+  },
+  'user@test.com': {
+    id: 2,
+    email: 'user@test.com',
+    name: 'Usuario Regular',
+    role: 'reader',
+    password: 'user123'
+  }
+};
 
 // Estado inicial
 const initialState = {
@@ -131,9 +148,30 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
+
+         // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const response = await authService.login(email, password);
-      const { user, token } = response.data;
+      // Verificar credenciales con usuarios simulados
+      const mockUser = MOCK_USERS[email];
+      if (!mockUser || mockUser.password !== password) {
+        throw new Error('Credenciales inválidas');
+      }
+      
+      // Crear datos del usuario (sin password)
+      const user = {
+        id: mockUser.id,
+        email: mockUser.email,
+        name: mockUser.name,
+        role: mockUser.role
+      };
+      
+      // Generar token simulado
+      const token = `fake-jwt-token-${user.id}-${Date.now()}`;
+      
+      
+      //const response = await authService.login(email, password);
+      //const { user, token } = response.data;
       
       // Guardar en localStorage
       localStorage.setItem('token', token);
@@ -160,8 +198,28 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.REGISTER_START });
       
-      const response = await authService.register(userData);
-      const { user, token } = response.data;
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Verificar si el email ya existe
+      if (MOCK_USERS[userData.email]) {
+        throw new Error('El email ya está registrado');
+      }
+      
+      // Crear nuevo usuario
+      const user = {
+        id: Date.now(),
+        email: userData.email,
+        name: userData.name || 'Usuario',
+        role: 'reader' // Por defecto, nuevos usuarios son readers
+      };
+      
+      // Generar token simulado
+      const token = `fake-jwt-token-${user.id}-${Date.now()}`;
+      
+
+      //const response = await authService.register(userData);
+      //const { user, token } = response.data;
       
       // Guardar en localStorage
       localStorage.setItem('token', token);
@@ -210,6 +268,16 @@ export const AuthProvider = ({ children }) => {
     return hasRole('reader');
   };
 
+    // Función para obtener información de usuarios disponibles (solo para desarrollo)
+  const getAvailableUsers = () => {
+    return Object.keys(MOCK_USERS).map(email => ({
+      email,
+      name: MOCK_USERS[email].name,
+      role: MOCK_USERS[email].role,
+      password: MOCK_USERS[email].password
+    }));
+  };
+
   const value = {
     ...state,
     login,
@@ -218,7 +286,8 @@ export const AuthProvider = ({ children }) => {
     clearError,
     hasRole,
     isAdmin,
-    isReader
+    isReader,
+    getAvailableUsers
   };
 
   return (
