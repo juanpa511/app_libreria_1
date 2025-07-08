@@ -29,8 +29,7 @@ export const AuthProvider = ({ children }) => {
           setUser({
             email: userEmail,
             role: userRole,
-            isAdmin: userRole === 'ADMIN',
-            isReader: userRole === 'LECTOR'
+            roleId: parseInt(userRole) || 2 // Valor por defecto: 2 (Lector)
           });
         }
       } catch (error) {
@@ -55,9 +54,8 @@ export const AuthProvider = ({ children }) => {
       
       const userData = {
         email: response.email || email,
-        role: response.role || 'LECTOR', // Valor por defecto si no viene el rol
-        isAdmin: response.role === 'ADMIN',
-        isReader: response.role === 'LECTOR'
+        role: response.rolId || 2, // El backend envía rolId, no role
+        roleId: parseInt(response.rolId) || 2
       };
       
       setUser(userData);
@@ -108,8 +106,8 @@ export const AuthProvider = ({ children }) => {
     logout: handleLogout,
     clearError,
     isAuthenticated: !!user,
-    isAdmin: user?.isAdmin || false,
-    isReader: user?.isReader || false
+    isAdmin: user?.roleId === 1,
+    isReader: user?.roleId === 2
   };
 
   return (

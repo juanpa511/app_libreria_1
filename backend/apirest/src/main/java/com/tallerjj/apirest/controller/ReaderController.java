@@ -4,7 +4,12 @@ import com.tallerjj.apirest.entity.User;
 import com.tallerjj.apirest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import java.util.Optional;
 
@@ -25,10 +30,26 @@ public class ReaderController {
      * @return datos del lector
      */
     @GetMapping("/find/{email}")
-    public ResponseEntity<User> findReaderByEmail(@PathVariable String email) {
-        return userRepository.findById(email)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> findReaderByEmail(@PathVariable String email) {
+        try {
+            // Verificar permisos de admin
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para buscar lectores");
+            }
+            
+            Optional<User> user = userRepository.findById(email);
+            if (user.isPresent()) {
+                return ResponseEntity.ok(user.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al buscar lector: " + e.getMessage());
+        }
     }
 
     /**
@@ -61,6 +82,153 @@ public class ReaderController {
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al cambiar el estado del lector: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene todos los usuarios (ADMIN)
+     * GET /api/reader/all
+     * @return lista de todos los usuarios
+     */
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            // Verificar permisos de admin
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para ver todos los usuarios");
+            }
+            
+            // Obtener todos los usuarios
+            List<User> users = userRepository.findAll();
+            return ResponseEntity.ok(users);
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al obtener usuarios: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene un usuario por ID (ADMIN)
+     * GET /api/reader/{id}
+     * @param id ID del usuario
+     * @return datos del usuario
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable String id) {
+        try {
+            // Verificar permisos de admin
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para ver usuarios");
+            }
+            
+            Optional<User> user = userRepository.findById(id);
+            if (user.isPresent()) {
+                return ResponseEntity.ok(user.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al obtener usuario: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene detalles completos de un usuario (ADMIN)
+     * GET /api/reader/{id}/details
+     * @param id ID del usuario
+     * @return detalles completos del usuario
+     */
+    @GetMapping("/{id}/details")
+    public ResponseEntity<?> getUserDetails(@PathVariable String id) {
+        try {
+            // Verificar permisos de admin
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para ver detalles de usuarios");
+            }
+            
+            Optional<User> user = userRepository.findById(id);
+            if (user.isPresent()) {
+                // Aquí podrías agregar lógica adicional para obtener préstamos, multas, etc.
+                return ResponseEntity.ok(user.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al obtener detalles del usuario: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Busca usuarios por término (ADMIN)
+     * GET /api/reader/search?q={query}
+     * @param query término de búsqueda
+     * @return lista de usuarios que coinciden
+     */
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(@RequestParam String q) {
+        try {
+            // Verificar permisos de admin
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para buscar usuarios");
+            }
+            
+            // Buscar usuarios que coincidan con el término
+            List<User> users = userRepository.findAll().stream()
+                .filter(user -> 
+                    user.getEmail().toLowerCase().contains(q.toLowerCase()) ||
+                    (user.getName() != null && user.getName().toLowerCase().contains(q.toLowerCase())) ||
+                    (user.getLastName() != null && user.getLastName().toLowerCase().contains(q.toLowerCase()))
+                )
+                .toList();
+            
+            return ResponseEntity.ok(users);
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al buscar usuarios: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Elimina un usuario (ADMIN)
+     * DELETE /api/reader/{id}
+     * @param id ID del usuario
+     * @return confirmación de eliminación
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable String id) {
+        try {
+            // Verificar permisos de admin
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para eliminar usuarios");
+            }
+            
+            Optional<User> user = userRepository.findById(id);
+            if (user.isPresent()) {
+                userRepository.deleteById(id);
+                return ResponseEntity.ok("Usuario eliminado exitosamente");
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al eliminar usuario: " + e.getMessage());
         }
     }
 

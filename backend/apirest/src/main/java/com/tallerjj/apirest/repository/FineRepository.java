@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface FineRepository extends JpaRepository<Fine, Long> {
+public interface FineRepository extends JpaRepository<Fine, Integer> {
     
     /**
      * Busca todas las multas de un usuario por su email

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../../styles/BookFilter.css';
 
-const BookFilter = ({ onFilterChange, onSearchChange, filters: initialFilters = {} }) => {
+const BookFilter = ({ onFilterChange, filters: initialFilters = {} }) => {
   const [filters, setFilters] = useState({
     type: initialFilters.type || '',
     availability: initialFilters.availability || '',
@@ -26,7 +26,6 @@ const BookFilter = ({ onFilterChange, onSearchChange, filters: initialFilters = 
       searchTerm: value
     };
     setFilters(newFilters);
-    onSearchChange(value);
     onFilterChange(newFilters);
   };
 
@@ -39,7 +38,6 @@ const BookFilter = ({ onFilterChange, onSearchChange, filters: initialFilters = 
     setFilters(emptyFilters);
     setSearchTerm('');
     onFilterChange(emptyFilters);
-    onSearchChange('');
   };
 
   // Tipos de libros según los requerimientos del proyecto

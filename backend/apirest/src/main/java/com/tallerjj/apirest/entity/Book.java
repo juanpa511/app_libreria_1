@@ -22,6 +22,9 @@ public class Book {
     @Column(nullable = false)
     private String type;
 
+    @Column(nullable = false)
+    private String isbn;
+
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     private byte[] image64;

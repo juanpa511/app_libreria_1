@@ -3,6 +3,8 @@ import { useApi } from '../../hooks/useApi';
 import loanService from '../../services/loanService';
 import LoanList from '../../components/Loans/LoanList';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Layout from '../../components/common/Layout';
+import CreateLoanModal from '../../components/Loans/CreateLoanModal';
 import '../../styles/AdminLoansPage.css';
 
 const AdminLoansPage = () => {
@@ -18,19 +20,48 @@ const AdminLoansPage = () => {
   });
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [confirmAction, setConfirmAction] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   const { loading, error, execute } = useApi();
 
+  // Función para mapear datos del backend a la estructura esperada por el frontend
+  const mapBookingToLoan = (booking) => {
+    const now = new Date();
+    const dueDate = new Date(booking.dateReturn);
+    const isOverdue = booking.state && dueDate < now;
+    
+    return {
+      id: booking.idBooking,
+      bookTitle: booking.copyBook?.book?.title || 'Título no disponible',
+      bookAuthor: booking.copyBook?.book?.author || 'N/A',
+      bookIsbn: booking.copyBook?.book?.isbn || 'N/A',
+      readerName: booking.user?.name || 'N/A',
+      readerEmail: booking.user?.email || 'N/A',
+      loanDate: booking.dateBooking,
+      dueDate: booking.dateReturn,
+      returnDate: booking.state ? null : new Date().toISOString(), // Si no está activo, se considera devuelto
+      status: booking.state ? (isOverdue ? 'OVERDUE' : 'ACTIVE') : 'RETURNED',
+      state: booking.state,
+      // Agregar datos originales para compatibilidad con el backend
+      originalBooking: booking,
+      // Agregar campos adicionales para compatibilidad
+      idBooking: booking.idBooking,
+      user: booking.user,
+      copyBook: booking.copyBook
+    };
+  };
+
   // Cargar préstamos
   const loadLoans = useCallback(async () => {
     try {
       const response = await execute(() => loanService.getAllLoans());
       if (response) {
-        setLoans(response);
-        applyFilters(response);
+        const mappedLoans = response.map(mapBookingToLoan);
+        setLoans(mappedLoans);
+        applyFilters(mappedLoans);
       }
     } catch (err) {
       console.error('Error loading loans:', err);
@@ -48,27 +79,27 @@ const AdminLoansPage = () => {
 
     if (filters.readerId) {
       filtered = filtered.filter(loan => 
-        loan.readerId?.toString().includes(filters.readerId) ||
-        loan.reader?.name?.toLowerCase().includes(filters.readerId.toLowerCase())
+        loan.readerEmail?.toLowerCase().includes(filters.readerId.toLowerCase()) ||
+        loan.readerName?.toLowerCase().includes(filters.readerId.toLowerCase())
       );
     }
 
     if (filters.bookId) {
       filtered = filtered.filter(loan => 
-        loan.bookId?.toString().includes(filters.bookId) ||
-        loan.book?.title?.toLowerCase().includes(filters.bookId.toLowerCase())
+        loan.bookTitle?.toLowerCase().includes(filters.bookId.toLowerCase()) ||
+        loan.bookIsbn?.includes(filters.bookId)
       );
     }
 
     if (filters.startDate) {
       filtered = filtered.filter(loan => 
-        new Date(loan.createdAt) >= new Date(filters.startDate)
+        new Date(loan.loanDate) >= new Date(filters.startDate)
       );
     }
 
     if (filters.endDate) {
       filtered = filtered.filter(loan => 
-        new Date(loan.createdAt) <= new Date(filters.endDate)
+        new Date(loan.loanDate) <= new Date(filters.endDate)
       );
     }
 
@@ -153,6 +184,15 @@ const AdminLoansPage = () => {
     );
   };
 
+  const handleCreateLoan = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleCreateSuccess = () => {
+    loadLoans();
+    showNotification('Préstamo creado exitosamente', 'success');
+  };
+
   const handleFilterChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFilters(prev => ({
@@ -184,7 +224,7 @@ const AdminLoansPage = () => {
     const csvContent = "data:text/csv;charset=utf-8," 
       + "ID,Lector,Libro,Fecha Préstamo,Fecha Vencimiento,Estado\n"
       + filteredLoans.map(loan => 
-          `${loan.id},${loan.reader?.name || 'N/A'},${loan.book?.title || 'N/A'},${loan.createdAt},${loan.dueDate},${loan.status}`
+          `${loan.id},${loan.readerName || 'N/A'},${loan.bookTitle || 'N/A'},${loan.loanDate},${loan.dueDate},${loan.status}`
         ).join("\n");
 
     const encodedUri = encodeURI(csvContent);
@@ -209,13 +249,20 @@ const AdminLoansPage = () => {
     let sortableLoans = [...filteredLoans];
     if (sortConfig.key) {
       sortableLoans.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        // Convertir fechas para comparación
+        if (sortConfig.key === 'loanDate' || sortConfig.key === 'dueDate') {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
+
+        if (sortConfig.direction === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
         }
-        return 0;
       });
     }
     return sortableLoans;
@@ -229,305 +276,323 @@ const AdminLoansPage = () => {
 
   if (loading && loans.length === 0) {
     return (
-      <div className="admin-loans-page">
-        <div className="loading-container">
-          <LoadingSpinner />
-          <p>Cargando préstamos...</p>
+      <Layout>
+        <div className="admin-loans-page">
+          <div className="loading-container">
+            <LoadingSpinner />
+            <p>Cargando préstamos...</p>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="admin-loans-page">
-      {/* Notificaciones */}
-      {notification.show && (
-        <div className={`notification ${notification.type}`}>
-          <span>{notification.message}</span>
-          <button onClick={() => setNotification({ show: false, message: '', type: '' })}>×</button>
-        </div>
-      )}
+    <Layout>
+      <div className="admin-loans-page">
+        {/* Notificaciones */}
+        {notification.show && (
+          <div className={`notification ${notification.type}`}>
+            <span>{notification.message}</span>
+            <button onClick={() => setNotification({ show: false, message: '', type: '' })}>×</button>
+          </div>
+        )}
 
-      {/* Modal de confirmación */}
-      {confirmAction && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Confirmar acción</h3>
-            <p>{confirmAction.message}</p>
-            <div className="modal-actions">
+        {/* Modal de confirmación */}
+        {confirmAction && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>Confirmar acción</h3>
+              <p>{confirmAction.message}</p>
+              <div className="modal-actions">
+                <button 
+                  onClick={() => setConfirmAction(null)}
+                  className="btn btn-secondary"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={executeAction}
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? 'Procesando...' : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal para crear préstamo */}
+        <CreateLoanModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={handleCreateSuccess}
+        />
+
+        {/* Header */}
+        <div className="page-header">
+          <div className="header-content">
+            <h1>Administrar Préstamos</h1>
+            <div className="header-actions">
               <button 
-                onClick={() => setConfirmAction(null)}
-                className="btn btn-secondary"
+                onClick={handleCreateLoan}
+                className="btn btn-success"
+                disabled={loading}
               >
-                Cancelar
+                ➕ Nuevo Préstamo
               </button>
               <button 
-                onClick={executeAction}
+                onClick={exportLoans}
+                className="btn btn-outline"
+                disabled={filteredLoans.length === 0}
+              >
+                📊 Exportar
+              </button>
+              <button 
+                onClick={loadLoans}
                 className="btn btn-primary"
                 disabled={loading}
               >
-                {loading ? 'Procesando...' : 'Confirmar'}
+                {loading ? '🔄 Cargando...' : '🔄 Actualizar'}
               </button>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-content">
-          <h1>Administrar Préstamos</h1>
-          <div className="header-actions">
-            <button 
-              onClick={exportLoans}
-              className="btn btn-outline"
-              disabled={filteredLoans.length === 0}
-            >
-              📊 Exportar
-            </button>
-            <button 
-              onClick={loadLoans}
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? '🔄 Cargando...' : '🔄 Actualizar'}
-            </button>
+        {/* Stats Cards */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-icon">📚</div>
+            <div className="stat-info">
+              <h3>{stats.total}</h3>
+              <p>Total</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">✅</div>
+            <div className="stat-info">
+              <h3>{stats.active}</h3>
+              <p>Activos</p>
+            </div>
+          </div>
+          <div className={`stat-card ${stats.overdue > 0 ? 'alert' : ''}`}>
+            <div className="stat-icon">⚠️</div>
+            <div className="stat-info">
+              <h3>{stats.overdue}</h3>
+              <p>Vencidos</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon">📖</div>
+            <div className="stat-info">
+              <h3>{stats.returned}</h3>
+              <p>Devueltos</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">📚</div>
-          <div className="stat-info">
-            <h3>{stats.total}</h3>
-            <p>Total</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">✅</div>
-          <div className="stat-info">
-            <h3>{stats.active}</h3>
-            <p>Activos</p>
-          </div>
-        </div>
-        <div className={`stat-card ${stats.overdue > 0 ? 'alert' : ''}`}>
-          <div className="stat-icon">⚠️</div>
-          <div className="stat-info">
-            <h3>{stats.overdue}</h3>
-            <p>Vencidos</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">📖</div>
-          <div className="stat-info">
-            <h3>{stats.returned}</h3>
-            <p>Devueltos</p>
-          </div>
-        </div>
-      </div>
+        {/* Filtros */}
+        <div className="filters-section">
+          <h2>Filtros</h2>
+          <div className="filters-grid">
+            <div className="filter-group">
+              <label>Estado:</label>
+              <select
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+              >
+                <option value="">Todos</option>
+                <option value="ACTIVE">Activos</option>
+                <option value="RETURNED">Devueltos</option>
+                <option value="OVERDUE">Vencidos</option>
+              </select>
+            </div>
 
-      {/* Filtros */}
-      <div className="filters-section">
-        <h2>Filtros</h2>
-        <div className="filters-grid">
-          <div className="filter-group">
-            <label>Estado:</label>
-            <select
-              name="status"
-              value={filters.status}
-              onChange={handleFilterChange}
-            >
-              <option value="">Todos</option>
-              <option value="ACTIVE">Activos</option>
-              <option value="RETURNED">Devueltos</option>
-              <option value="OVERDUE">Vencidos</option>
-              <option value="CANCELLED">Cancelados</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>ID Lector:</label>
-            <input
-              type="text"
-              name="readerId"
-              value={filters.readerId}
-              onChange={handleFilterChange}
-              placeholder="Buscar por ID o nombre"
-            />
-          </div>
-
-          <div className="filter-group">
-            <label>ID Libro:</label>
-            <input
-              type="text"
-              name="bookId"
-              value={filters.bookId}
-              onChange={handleFilterChange}
-              placeholder="Buscar por ID o título"
-            />
-          </div>
-
-          <div className="filter-group">
-            <label>Fecha Desde:</label>
-            <input
-              type="date"
-              name="startDate"
-              value={filters.startDate}
-              onChange={handleFilterChange}
-            />
-          </div>
-
-          <div className="filter-group">
-            <label>Fecha Hasta:</label>
-            <input
-              type="date"
-              name="endDate"
-              value={filters.endDate}
-              onChange={handleFilterChange}
-            />
-          </div>
-
-          <div className="filter-group checkbox-group">
-            <label className="checkbox-label">
+            <div className="filter-group">
+              <label>Lector:</label>
               <input
-                type="checkbox"
-                name="overdue"
-                checked={filters.overdue}
+                type="text"
+                name="readerId"
+                value={filters.readerId}
+                onChange={handleFilterChange}
+                placeholder="Buscar por email o nombre"
+              />
+            </div>
+
+            <div className="filter-group">
+              <label>Libro:</label>
+              <input
+                type="text"
+                name="bookId"
+                value={filters.bookId}
+                onChange={handleFilterChange}
+                placeholder="Buscar por título o ISBN"
+              />
+            </div>
+
+            <div className="filter-group">
+              <label>Fecha Desde:</label>
+              <input
+                type="date"
+                name="startDate"
+                value={filters.startDate}
                 onChange={handleFilterChange}
               />
-              Solo préstamos vencidos
-            </label>
+            </div>
+
+            <div className="filter-group">
+              <label>Fecha Hasta:</label>
+              <input
+                type="date"
+                name="endDate"
+                value={filters.endDate}
+                onChange={handleFilterChange}
+              />
+            </div>
+
+            <div className="filter-group checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="overdue"
+                  checked={filters.overdue}
+                  onChange={handleFilterChange}
+                />
+                Solo préstamos vencidos
+              </label>
+            </div>
           </div>
-        </div>
 
-        <div className="filter-actions">
-          <button 
-            onClick={resetFilters}
-            className="btn btn-secondary"
-          >
-            Limpiar Filtros
-          </button>
-        </div>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="alert alert-error">
-          <span className="alert-icon">⚠️</span>
-          <div className="alert-content">
-            <strong>Error:</strong> {error}
+          <div className="filter-actions">
             <button 
-              onClick={loadLoans}
-              className="btn btn-sm btn-outline"
+              onClick={resetFilters}
+              className="btn btn-secondary"
             >
-              Reintentar
+              Limpiar Filtros
             </button>
           </div>
         </div>
-      )}
 
-      {/* Controles de ordenación */}
-      <div className="sort-controls">
-        <span>Ordenar por:</span>
-        <button 
-          onClick={() => handleSort('createdAt')}
-          className={`sort-btn ${sortConfig.key === 'createdAt' ? 'active' : ''}`}
-        >
-          Fecha {sortConfig.key === 'createdAt' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-        </button>
-        <button 
-          onClick={() => handleSort('dueDate')}
-          className={`sort-btn ${sortConfig.key === 'dueDate' ? 'active' : ''}`}
-        >
-          Vencimiento {sortConfig.key === 'dueDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-        </button>
-        <button 
-          onClick={() => handleSort('status')}
-          className={`sort-btn ${sortConfig.key === 'status' ? 'active' : ''}`}
-        >
-          Estado {sortConfig.key === 'status' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-        </button>
-      </div>
-
-      {/* Results */}
-      <div className="results-section">
-        <div className="results-header">
-          <p className="results-info">
-            Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredLoans.length)} de {filteredLoans.length} préstamos
-          </p>
-          {loading && (
-            <div className="inline-loading">
-              <LoadingSpinner />
-              <span>Actualizando...</span>
+        {/* Error Message */}
+        {error && (
+          <div className="alert alert-error">
+            <span className="alert-icon">⚠️</span>
+            <div className="alert-content">
+              <strong>Error:</strong> {error}
+              <button 
+                onClick={loadLoans}
+                className="btn btn-sm btn-outline"
+              >
+                Reintentar
+              </button>
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Controles de ordenación */}
+        <div className="sort-controls">
+          <span>Ordenar por:</span>
+          <button 
+            onClick={() => handleSort('loanDate')}
+            className={`sort-btn ${sortConfig.key === 'loanDate' ? 'active' : ''}`}
+          >
+            Fecha {sortConfig.key === 'loanDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+          </button>
+          <button 
+            onClick={() => handleSort('dueDate')}
+            className={`sort-btn ${sortConfig.key === 'dueDate' ? 'active' : ''}`}
+          >
+            Vencimiento {sortConfig.key === 'dueDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+          </button>
+          <button 
+            onClick={() => handleSort('status')}
+            className={`sort-btn ${sortConfig.key === 'status' ? 'active' : ''}`}
+          >
+            Estado {sortConfig.key === 'status' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+          </button>
         </div>
 
-        {filteredLoans.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">📚</div>
-            <h3>No hay préstamos disponibles</h3>
-            <p>No se encontraron préstamos que coincidan con los filtros seleccionados.</p>
-            {Object.values(filters).some(value => value) && (
-              <button 
-                onClick={resetFilters}
-                className="btn btn-primary"
-              >
-                Limpiar Filtros
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <LoanList
-              loans={currentLoans}
-              onReturnLoan={handleReturnLoan}
-              onRenewLoan={handleRenewLoan}
-              onCancelLoan={handleCancelLoan}
-              showAdminActions={true}
-            />
-            
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <div className="pagination">
-                <button 
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="btn btn-outline"
-                >
-                  ← Anterior
-                </button>
-                
-                <div className="page-numbers">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                <button 
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="btn btn-outline"
-                >
-                  Siguiente →
-                </button>
+        {/* Results */}
+        <div className="results-section">
+          <div className="results-header">
+            <p className="results-info">
+              Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredLoans.length)} de {filteredLoans.length} préstamos
+            </p>
+            {loading && (
+              <div className="inline-loading">
+                <LoadingSpinner />
+                <span>Actualizando...</span>
               </div>
             )}
-          </>
-        )}
+          </div>
+
+          {filteredLoans.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📚</div>
+              <h3>No hay préstamos disponibles</h3>
+              <p>No se encontraron préstamos que coincidan con los filtros seleccionados.</p>
+              {Object.values(filters).some(value => value) && (
+                <button 
+                  onClick={resetFilters}
+                  className="btn btn-primary"
+                >
+                  Limpiar Filtros
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <LoanList
+                loans={currentLoans}
+                onReturnLoan={handleReturnLoan}
+                onExtendLoan={handleRenewLoan}
+                onViewDetails={(loan) => console.log('Ver detalles:', loan)}
+                isAdmin={true}
+                loading={loading}
+              />
+              
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="btn btn-outline"
+                  >
+                    ← Anterior
+                  </button>
+                  
+                  <div className="page-numbers">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="btn btn-outline"
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

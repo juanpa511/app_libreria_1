@@ -111,10 +111,7 @@ const RegisterForm = () => {
   return (
     <div className="register-form-container">
       <div className="register-form-card">
-        <div className="form-header">
-          <h2>Crear Cuenta</h2>
-          <p>Regístrate para acceder a la Biblioteca Municipal</p>
-        </div>
+        
 
         <form onSubmit={handleSubmit}>
           <div className="form-row">
@@ -227,14 +224,7 @@ const RegisterForm = () => {
           </button>
         </form>
 
-        <div className="register-footer">
-          <p>
-            ¿Ya tienes una cuenta? 
-            <Link to="/login" className="login-link">
-              Inicia sesión aquí
-            </Link>
-          </p>
-        </div>
+      
       </div>
     </div>
   );

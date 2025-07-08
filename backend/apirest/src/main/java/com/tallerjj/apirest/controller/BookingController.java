@@ -11,6 +11,7 @@ import com.tallerjj.apirest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,6 +96,32 @@ public class BookingController {
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al crear la reserva: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene todas las reservas (ADMIN)
+     * GET /api/booking/all
+     * @return lista de todas las reservas
+     */
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllBookings() {
+        try {
+            // Obtener información del usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            // Solo admin puede ver todas las reservas
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para ver todas las reservas");
+            }
+            
+            // Buscar todas las reservas
+            List<Booking> bookings = bookingRepository.findAll();
+            return ResponseEntity.ok(bookings);
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al obtener reservas: " + e.getMessage());
         }
     }
 
@@ -238,6 +265,100 @@ public class BookingController {
      * @return lista de préstamos del usuario
      */
     // Este endpoint es el mismo que el de ADMIN, se maneja con roles
+
+    /**
+     * Renueva un préstamo (ADMIN)
+     * POST /api/booking/renew/{idBooking}
+     * @param idBooking ID de la reserva
+     * @return confirmación de renovación
+     */
+    @PostMapping("/renew/{idBooking}")
+    public ResponseEntity<?> renewBooking(@PathVariable Long idBooking) {
+        try {
+            // Verificar permisos de admin
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para renovar préstamos");
+            }
+            
+            // Buscar la reserva
+            Optional<Booking> bookingOpt = bookingRepository.findById(idBooking);
+            if (bookingOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("La reserva especificada no existe");
+            }
+            
+            Booking booking = bookingOpt.get();
+            
+            // Verificar que el préstamo esté activo
+            if (!booking.isState()) {
+                return ResponseEntity.badRequest().body("No se puede renovar un préstamo que ya fue devuelto");
+            }
+            
+            // Verificar que no esté vencido
+            if (LocalDateTime.now().isAfter(booking.getDateReturn())) {
+                return ResponseEntity.badRequest().body("No se puede renovar un préstamo vencido");
+            }
+            
+            // Renovar por 5 días más
+            booking.setDateReturn(booking.getDateReturn().plusDays(5));
+            bookingRepository.save(booking);
+            
+            return ResponseEntity.ok("Préstamo renovado exitosamente. Nueva fecha de vencimiento: " + booking.getDateReturn());
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al renovar el préstamo: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Cancela un préstamo (ADMIN)
+     * POST /api/booking/cancel/{idBooking}
+     * @param idBooking ID de la reserva
+     * @return confirmación de cancelación
+     */
+    @PostMapping("/cancel/{idBooking}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long idBooking) {
+        try {
+            // Verificar permisos de admin
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            if (!isAdmin) {
+                return ResponseEntity.status(403).body("No tienes permisos para cancelar préstamos");
+            }
+            
+            // Buscar la reserva
+            Optional<Booking> bookingOpt = bookingRepository.findById(idBooking);
+            if (bookingOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("La reserva especificada no existe");
+            }
+            
+            Booking booking = bookingOpt.get();
+            
+            // Verificar que el préstamo esté activo
+            if (!booking.isState()) {
+                return ResponseEntity.badRequest().body("No se puede cancelar un préstamo que ya fue devuelto");
+            }
+            
+            // Obtener la copia del libro
+            CopyBook copyBook = booking.getCopyBook();
+            
+            // Actualizar estado de la copia a disponible
+            copyBook.setState(true);
+            copyBookRepository.save(copyBook);
+            
+            // Actualizar estado de la reserva a inactiva
+            booking.setState(false);
+            bookingRepository.save(booking);
+            
+            return ResponseEntity.ok("Préstamo cancelado exitosamente");
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al cancelar el préstamo: " + e.getMessage());
+        }
+    }
 }
 
 // Clase auxiliar para recibir los datos de devolución

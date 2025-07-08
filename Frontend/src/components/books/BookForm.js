@@ -5,15 +5,9 @@ const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     author: initialData?.author || '',
-    isbn: initialData?.isbn || '',
     type: initialData?.type || '',
-    description: initialData?.description || '',
-    publishedYear: initialData?.publishedYear || '',
-    publisher: initialData?.publisher || '',
-    pages: initialData?.pages || '',
-    language: initialData?.language || 'es',
-    copies: initialData?.copies || 1,
-    available: initialData?.available !== undefined ? initialData.available : true
+    isbn: initialData?.isbn || '',
+    image64: initialData?.image64 || ''
   });
   
   const [errors, setErrors] = useState({});
@@ -31,20 +25,24 @@ const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
     { value: 'tecnologia', label: 'Tecnología' }
   ];
 
-  const languages = [
-    { code: 'es', name: 'Español' },
-    { code: 'en', name: 'Inglés' },
-    { code: 'fr', name: 'Francés' },
-    { code: 'de', name: 'Alemán' },
-    { code: 'pt', name: 'Portugués' }
-  ];
-
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    const { name, value, type, files } = e.target;
+    
+    if (type === 'file' && files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData(prev => ({
+          ...prev,
+          image64: e.target.result
+        }));
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     
     // Limpiar error cuando el usuario empieza a escribir
     if (errors[name]) {
@@ -66,26 +64,18 @@ const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
       newErrors.author = 'El autor es requerido';
     }
     
-    if (!formData.isbn.trim()) {
-      newErrors.isbn = 'El ISBN es requerido';
-    } else if (!/^\d{10}(\d{3})?$/.test(formData.isbn.replace(/-/g, ''))) {
-      newErrors.isbn = 'El ISBN debe tener 10 o 13 dígitos';
-    }
-    
     if (!formData.type) {
       newErrors.type = 'El tipo de libro es requerido';
     }
     
-    if (formData.publishedYear && (formData.publishedYear < 1000 || formData.publishedYear > new Date().getFullYear())) {
-      newErrors.publishedYear = 'El año de publicación no es válido';
+    if (!formData.isbn.trim()) {
+      newErrors.isbn = 'El ISBN es requerido';
+    } else if (!/^[0-9]{10}([0-9]{3})?$/.test(formData.isbn.replace(/-/g, ''))) {
+      newErrors.isbn = 'El ISBN debe tener 10 o 13 dígitos';
     }
     
-    if (formData.pages && (formData.pages < 1 || formData.pages > 10000)) {
-      newErrors.pages = 'El número de páginas debe estar entre 1 y 10000';
-    }
-    
-    if (formData.copies < 1) {
-      newErrors.copies = 'Debe haber al menos 1 copia';
+    if (!formData.image64) {
+      newErrors.image64 = 'La imagen es requerida';
     }
     
     setErrors(newErrors);
@@ -95,14 +85,26 @@ const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // Preparar datos para envío
+      // Enviar la imagen como string base64 puro (sin el prefijo data:image/...;base64,)
+      let imageBase64 = null;
+      if (formData.image64) {
+        try {
+          imageBase64 = formData.image64.split(',')[1]; // Remover el prefijo data:image/...;base64,
+        } catch (error) {
+          console.error('Error procesando imagen:', error);
+          alert('Error al procesar la imagen. Por favor, selecciona otra imagen.');
+          return;
+        }
+      }
+      
       const dataToSend = {
-        ...formData,
-        publishedYear: formData.publishedYear ? parseInt(formData.publishedYear) : null,
-        pages: formData.pages ? parseInt(formData.pages) : null,
-        copies: parseInt(formData.copies),
-        available: formData.available
+        title: formData.title,
+        author: formData.author,
+        type: formData.type,
+        isbn: formData.isbn,
+        image64: imageBase64
       };
+      
       onSubmit(dataToSend);
     }
   };
@@ -111,15 +113,9 @@ const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
     setFormData({
       title: '',
       author: '',
-      isbn: '',
       type: '',
-      description: '',
-      publishedYear: '',
-      publisher: '',
-      pages: '',
-      language: 'es',
-      copies: 1,
-      available: true
+      isbn: '',
+      image64: ''
     });
     setErrors({});
   };
@@ -133,7 +129,7 @@ const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
       
       <div className="book-form" onSubmit={handleSubmit}>
         <div className="form-section">
-          <h3>Información Básica</h3>
+          <h3>Información del Libro</h3>
           
           <div className="form-row">
             <div className="form-group">
@@ -169,21 +165,6 @@ const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="isbn">ISBN *</label>
-              <input
-                type="text"
-                id="isbn"
-                name="isbn"
-                value={formData.isbn}
-                onChange={handleChange}
-                className={errors.isbn ? 'error' : ''}
-                placeholder="978-0-123456-78-9"
-                maxLength="17"
-              />
-              {errors.isbn && <span className="error-message">{errors.isbn}</span>}
-            </div>
-
-            <div className="form-group">
               <label htmlFor="type">Tipo de Libro *</label>
               <select
                 id="type"
@@ -198,122 +179,40 @@ const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
               </select>
               {errors.type && <span className="error-message">{errors.type}</span>}
             </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Descripción</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="4"
-              placeholder="Ingrese una descripción del libro..."
-              maxLength="500"
-            />
-            <small>{formData.description.length}/500 caracteres</small>
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h3>Detalles de Publicación</h3>
-          
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="publishedYear">Año de Publicación</label>
-              <input
-                type="number"
-                id="publishedYear"
-                name="publishedYear"
-                value={formData.publishedYear}
-                onChange={handleChange}
-                className={errors.publishedYear ? 'error' : ''}
-                min="1000"
-                max={new Date().getFullYear()}
-                placeholder="2024"
-              />
-              {errors.publishedYear && <span className="error-message">{errors.publishedYear}</span>}
-            </div>
 
             <div className="form-group">
-              <label htmlFor="publisher">Editorial</label>
+              <label htmlFor="isbn">ISBN *</label>
               <input
                 type="text"
-                id="publisher"
-                name="publisher"
-                value={formData.publisher}
+                id="isbn"
+                name="isbn"
+                value={formData.isbn}
                 onChange={handleChange}
-                placeholder="Ingrese la editorial"
-                maxLength="100"
+                className={errors.isbn ? 'error' : ''}
+                placeholder="Ingrese el ISBN del libro"
+                maxLength="13"
               />
+              {errors.isbn && <span className="error-message">{errors.isbn}</span>}
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="pages">Número de Páginas</label>
+              <label htmlFor="image">Imagen del Libro *</label>
               <input
-                type="number"
-                id="pages"
-                name="pages"
-                value={formData.pages}
+                type="file"
+                id="image"
+                name="image"
                 onChange={handleChange}
-                className={errors.pages ? 'error' : ''}
-                min="1"
-                max="10000"
-                placeholder="150"
+                className={errors.image64 ? 'error' : ''}
+                accept="image/*"
               />
-              {errors.pages && <span className="error-message">{errors.pages}</span>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="language">Idioma</label>
-              <select
-                id="language"
-                name="language"
-                value={formData.language}
-                onChange={handleChange}
-              >
-                {languages.map(lang => (
-                  <option key={lang.code} value={lang.code}>{lang.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h3>Disponibilidad</h3>
-          
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="copies">Número de Copias *</label>
-              <input
-                type="number"
-                id="copies"
-                name="copies"
-                value={formData.copies}
-                onChange={handleChange}
-                className={errors.copies ? 'error' : ''}
-                min="1"
-                max="100"
-              />
-              {errors.copies && <span className="error-message">{errors.copies}</span>}
-            </div>
-
-            <div className="form-group">
-              <div className="checkbox-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="available"
-                    checked={formData.available}
-                    onChange={handleChange}
-                  />
-                  <span className="checkbox-custom"></span>
-                  <span className="checkbox-text">Disponible para préstamo</span>
-                </label>
-              </div>
+              {errors.image64 && <span className="error-message">{errors.image64}</span>}
+              {formData.image64 && (
+                <div className="image-preview">
+                  <img src={formData.image64} alt="Vista previa" style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px' }} />
+                </div>
+              )}
             </div>
           </div>
         </div>

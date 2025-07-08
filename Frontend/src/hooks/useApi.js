@@ -33,9 +33,12 @@ export const useApi = () => {
     setError(null);
   };
 
+  const execute = handleApiCall;
+
   return {
     loading,
     error,
+    execute,
     handleApiCall,
     clearError
   };

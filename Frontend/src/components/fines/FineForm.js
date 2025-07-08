@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 
 const FineForm = ({ onSubmit, onCancel, initialData = null }) => {
   const [formData, setFormData] = useState({
-    readerId: initialData?.readerId || '',
-    loanId: initialData?.loanId || '',
+    user: {
+      email: initialData?.user?.email || ''
+    },
     amount: initialData?.amount || '',
-    reason: initialData?.reason || '',
-    dueDate: initialData?.dueDate || '',
-    status: initialData?.status || 'PENDING'
+    description: initialData?.description || '',
+    state: initialData?.state || false
   });
 
   const [errors, setErrors] = useState({});
@@ -16,24 +16,20 @@ const FineForm = ({ onSubmit, onCancel, initialData = null }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.readerId.trim()) {
-      newErrors.readerId = 'ID del lector es requerido';
-    }
-
-    if (!formData.loanId.trim()) {
-      newErrors.loanId = 'ID del préstamo es requerido';
+    if (!formData.user.email.trim()) {
+      newErrors.userEmail = 'Email del lector es requerido';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.user.email)) {
+      newErrors.userEmail = 'Email del lector debe tener un formato válido';
     }
 
     if (!formData.amount || formData.amount <= 0) {
       newErrors.amount = 'El monto debe ser mayor a 0';
     }
 
-    if (!formData.reason.trim()) {
-      newErrors.reason = 'La razón de la multa es requerida';
-    }
-
-    if (!formData.dueDate) {
-      newErrors.dueDate = 'La fecha de vencimiento es requerida';
+    if (!formData.description.trim()) {
+      newErrors.description = 'La descripción de la multa es requerida';
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description = 'La descripción debe tener al menos 10 caracteres';
     }
 
     setErrors(newErrors);
@@ -79,31 +75,20 @@ const FineForm = ({ onSubmit, onCancel, initialData = null }) => {
       
       <form onSubmit={handleSubmit} className="fine-form">
         <div className="form-group">
-          <label htmlFor="readerId">ID del Lector:</label>
+          <label htmlFor="userEmail">Email del Lector:</label>
           <input
-            type="text"
-            id="readerId"
-            name="readerId"
-            value={formData.readerId}
-            onChange={handleChange}
-            className={errors.readerId ? 'error' : ''}
+            type="email"
+            id="userEmail"
+            name="userEmail"
+            value={formData.user.email}
+            onChange={(e) => setFormData(prev => ({
+              ...prev,
+              user: { ...prev.user, email: e.target.value }
+            }))}
+            className={errors.userEmail ? 'error' : ''}
             disabled={isSubmitting}
           />
-          {errors.readerId && <span className="error-message">{errors.readerId}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="loanId">ID del Préstamo:</label>
-          <input
-            type="text"
-            id="loanId"
-            name="loanId"
-            value={formData.loanId}
-            onChange={handleChange}
-            className={errors.loanId ? 'error' : ''}
-            disabled={isSubmitting}
-          />
-          {errors.loanId && <span className="error-message">{errors.loanId}</span>}
+          {errors.userEmail && <span className="error-message">{errors.userEmail}</span>}
         </div>
 
         <div className="form-group">
@@ -123,45 +108,33 @@ const FineForm = ({ onSubmit, onCancel, initialData = null }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="reason">Razón de la Multa:</label>
+          <label htmlFor="description">Descripción de la Multa:</label>
           <textarea
-            id="reason"
-            name="reason"
-            value={formData.reason}
+            id="description"
+            name="description"
+            value={formData.description}
             onChange={handleChange}
-            className={errors.reason ? 'error' : ''}
+            className={errors.description ? 'error' : ''}
             disabled={isSubmitting}
             rows="3"
           />
-          {errors.reason && <span className="error-message">{errors.reason}</span>}
+          {errors.description && <span className="error-message">{errors.description}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="dueDate">Fecha de Vencimiento:</label>
-          <input
-            type="date"
-            id="dueDate"
-            name="dueDate"
-            value={formData.dueDate}
-            onChange={handleChange}
-            className={errors.dueDate ? 'error' : ''}
-            disabled={isSubmitting}
-          />
-          {errors.dueDate && <span className="error-message">{errors.dueDate}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="status">Estado:</label>
+          <label htmlFor="state">Estado:</label>
           <select
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
+            id="state"
+            name="state"
+            value={formData.state.toString()}
+            onChange={(e) => setFormData(prev => ({
+              ...prev,
+              state: e.target.value === 'true'
+            }))}
             disabled={isSubmitting}
           >
-            <option value="PENDING">Pendiente</option>
-            <option value="PAID">Pagada</option>
-            <option value="CANCELLED">Cancelada</option>
+            <option value="false">Pendiente</option>
+            <option value="true">Pagada</option>
           </select>
         </div>
 

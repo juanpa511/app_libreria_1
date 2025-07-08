@@ -22,13 +22,13 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 
   // Si se requiere un rol específico, verificar que el usuario lo tenga
   if (requiredRole) {
-    const userRole = user?.role || user?.roles?.[0] || 'READER';
+    const userRole = user?.roleId || user?.role || 2;
     
-    if (requiredRole === 'ADMIN' && userRole !== 'ADMIN') {
+    if (requiredRole === 1 && userRole !== 1) {
       return <Navigate to="/unauthorized" replace />;
     }
     
-    if (requiredRole === 'READER' && userRole !== 'READER') {
+    if (requiredRole === 2 && userRole !== 2) {
       return <Navigate to="/unauthorized" replace />;
     }
   }

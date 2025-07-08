@@ -4,20 +4,23 @@ import fineService from '../../services/fineService';
 import FineList from '../../components/fines/FineList';
 import FineForm from '../../components/fines/FineForm';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Notification from '../../components/common/Notification';
 import '../../styles/AdminFinesPage.css';
+import Layout from '../../components/common/Layout';
 
 const AdminFinesPage = () => {
   const [fines, setFines] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedFine, setSelectedFine] = useState(null);
+  const [notification, setNotification] = useState(null);
   const [filters, setFilters] = useState({
     status: '',
-    readerId: '',
+    readerEmail: '',
     startDate: '',
     endDate: ''
   });
 
-  const { loading, error, execute } = useApi();
+  const { loading, error, handleApiCall } = useApi();
 
   useEffect(() => {
     loadFines();
@@ -25,8 +28,22 @@ const AdminFinesPage = () => {
 
   const loadFines = async () => {
     try {
-      const response = await execute(() => fineService.getAllFines(filters));
-      setFines(response || []);
+      const response = await handleApiCall(fineService.getAllFines);
+      let filteredFines = response || [];
+      
+      // Aplicar filtros en el frontend
+      if (filters.status !== '') {
+        const statusFilter = filters.status === 'true';
+        filteredFines = filteredFines.filter(fine => fine.state === statusFilter);
+      }
+      
+      if (filters.readerEmail) {
+        filteredFines = filteredFines.filter(fine => 
+          fine.user?.email?.toLowerCase().includes(filters.readerEmail.toLowerCase())
+        );
+      }
+      
+      setFines(filteredFines);
     } catch (err) {
       console.error('Error loading fines:', err);
     }
@@ -34,49 +51,77 @@ const AdminFinesPage = () => {
 
   const handleCreateFine = async (fineData) => {
     try {
-      await execute(() => fineService.createFine(fineData));
+      await handleApiCall(fineService.createFine, fineData);
       setShowForm(false);
       loadFines();
-      alert('Multa creada exitosamente');
+      setNotification({
+        message: 'Multa creada exitosamente',
+        type: 'success'
+      });
     } catch (err) {
       console.error('Error creating fine:', err);
-      alert('Error al crear la multa');
+      const errorMessage = err.message || 'Error al crear la multa';
+      setNotification({
+        message: `Error al crear la multa: ${errorMessage}`,
+        type: 'error'
+      });
     }
   };
 
   const handleUpdateFine = async (fineData) => {
     try {
-      await execute(() => fineService.updateFine(selectedFine.id, fineData));
+      await handleApiCall(fineService.updateFine, selectedFine.idFine, fineData);
       setShowForm(false);
       setSelectedFine(null);
       loadFines();
-      alert('Multa actualizada exitosamente');
+      setNotification({
+        message: 'Multa actualizada exitosamente',
+        type: 'success'
+      });
     } catch (err) {
       console.error('Error updating fine:', err);
-      alert('Error al actualizar la multa');
+      const errorMessage = err.message || 'Error al actualizar la multa';
+      setNotification({
+        message: `Error al actualizar la multa: ${errorMessage}`,
+        type: 'error'
+      });
     }
   };
 
   const handlePayFine = async (fineId) => {
     try {
-      await execute(() => fineService.payFine(fineId));
+      await handleApiCall(fineService.payFine, fineId);
       loadFines();
-      alert('Multa pagada exitosamente');
+      setNotification({
+        message: 'Multa pagada exitosamente',
+        type: 'success'
+      });
     } catch (err) {
       console.error('Error paying fine:', err);
-      alert('Error al pagar la multa');
+      const errorMessage = err.message || 'Error al pagar la multa';
+      setNotification({
+        message: `Error al pagar la multa: ${errorMessage}`,
+        type: 'error'
+      });
     }
   };
 
   const handleDeleteFine = async (fineId) => {
     if (window.confirm('¿Está seguro de que desea eliminar esta multa?')) {
       try {
-        await execute(() => fineService.deleteFine(fineId));
+        await handleApiCall(fineService.deleteFine, fineId);
         loadFines();
-        alert('Multa eliminada exitosamente');
+        setNotification({
+          message: 'Multa eliminada exitosamente',
+          type: 'success'
+        });
       } catch (err) {
         console.error('Error deleting fine:', err);
-        alert('Error al eliminar la multa');
+        const errorMessage = err.message || 'Error al eliminar la multa';
+        setNotification({
+          message: `Error al eliminar la multa: ${errorMessage}`,
+          type: 'error'
+        });
       }
     }
   };
@@ -92,7 +137,7 @@ const AdminFinesPage = () => {
   const resetFilters = () => {
     setFilters({
       status: '',
-      readerId: '',
+      readerEmail: '',
       startDate: '',
       endDate: ''
     });
@@ -130,93 +175,102 @@ const AdminFinesPage = () => {
   }
 
   return (
-    <div className="admin-fines-page">
-      <div className="page-header">
-        <h1>Administrar Multas</h1>
-        <button 
-          onClick={() => setShowForm(true)}
-          className="btn btn-primary"
-        >
-          + Nueva Multa
-        </button>
-      </div>
-
-      <div className="filters-section">
-        <div className="filters-grid">
-          <div className="filter-group">
-            <label>Estado:</label>
-            <select
-              name="status"
-              value={filters.status}
-              onChange={handleFilterChange}
-            >
-              <option value="">Todos</option>
-              <option value="PENDING">Pendiente</option>
-              <option value="PAID">Pagada</option>
-              <option value="CANCELLED">Cancelada</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>ID Lector:</label>
-            <input
-              type="text"
-              name="readerId"
-              value={filters.readerId}
-              onChange={handleFilterChange}
-              placeholder="Buscar por ID"
-            />
-          </div>
-
-          <div className="filter-group">
-            <label>Fecha Desde:</label>
-            <input
-              type="date"
-              name="startDate"
-              value={filters.startDate}
-              onChange={handleFilterChange}
-            />
-          </div>
-
-          <div className="filter-group">
-            <label>Fecha Hasta:</label>
-            <input
-              type="date"
-              name="endDate"
-              value={filters.endDate}
-              onChange={handleFilterChange}
-            />
-          </div>
-        </div>
-
-        <div className="filter-actions">
+    <Layout>
+      <div className="admin-fines-page">
+        <div className="page-header">
+          <h1>Administrar Multas</h1>
           <button 
-            onClick={resetFilters}
-            className="btn btn-secondary"
+            onClick={() => setShowForm(true)}
+            className="btn btn-primary"
           >
-            Limpiar Filtros
+            + Nueva Multa
           </button>
         </div>
-      </div>
 
-      {error && (
-        <div className="error-message">
-          <p>Error: {error}</p>
+        <div className="filters-section">
+          <div className="filters-grid">
+            <div className="filter-group">
+              <label>Estado:</label>
+              <select
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+              >
+                <option value="">Todos</option>
+                <option value="false">Pendiente</option>
+                <option value="true">Pagada</option>
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label>Email Lector:</label>
+              <input
+                type="email"
+                name="readerEmail"
+                value={filters.readerEmail}
+                onChange={handleFilterChange}
+                placeholder="Buscar por email"
+              />
+            </div>
+
+            <div className="filter-group">
+              <label>Fecha Desde:</label>
+              <input
+                type="date"
+                name="startDate"
+                value={filters.startDate}
+                onChange={handleFilterChange}
+              />
+            </div>
+
+            <div className="filter-group">
+              <label>Fecha Hasta:</label>
+              <input
+                type="date"
+                name="endDate"
+                value={filters.endDate}
+                onChange={handleFilterChange}
+              />
+            </div>
+          </div>
+
+          <div className="filter-actions">
+            <button 
+              onClick={resetFilters}
+              className="btn btn-secondary"
+            >
+              Limpiar Filtros
+            </button>
+          </div>
         </div>
-      )}
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <FineList
-          fines={fines}
-          onPayFine={handlePayFine}
-          onEditFine={handleEditFine}
-          onDeleteFine={handleDeleteFine}
-          showAdminActions={true}
+        {error && (
+          <div className="error-message">
+            <p>Error: {error}</p>
+          </div>
+        )}
+
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <FineList
+            fines={fines}
+            onPayFine={handlePayFine}
+            onEditFine={handleEditFine}
+            onDeleteFine={handleDeleteFine}
+            isAdmin={true}
+          />
+        )}
+      </div>
+      
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
         />
       )}
-    </div>
+    </Layout>
   );
 };
 

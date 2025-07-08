@@ -66,6 +66,10 @@ const BookCard = ({ book, onBorrow, onEdit, onDelete, showActions = true }) => {
       <div className="book-image">
         {book.imagen64 ? (
           <img src={`data:image/jpeg;base64,${book.imagen64}`} alt={book.title} />
+        ) : book.image ? (
+          <img src={book.image} alt={book.title} />
+        ) : book.cover ? (
+          <img src={book.cover} alt={book.title} />
         ) : (
           <div className="book-placeholder">
             <span className="book-placeholder-icon">📚</span>

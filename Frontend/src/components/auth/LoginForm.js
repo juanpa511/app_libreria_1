@@ -61,11 +61,16 @@ const LoginForm = () => {
       
       if (result.success) {
         // Redirigir según el rol del usuario
-        if (result.user.isAdmin) {
-          navigate('/admin/dashboard');
-        } else if (result.user.isReader) {
-          navigate('/reader/dashboard');
+        const userRole = result.user.roleId || result.user.role || 2;
+        
+        if (userRole === 1) {
+          // Administrador - redirigir a la página de gestión de libros
+          navigate('/admin/books');
+        } else if (userRole === 2) {
+          // Lector - redirigir a la página de libros
+          navigate('/books');
         } else {
+          // Rol desconocido - redirigir a la página de libros
           navigate('/books');
         }
       } else {
@@ -82,10 +87,6 @@ const LoginForm = () => {
   return (
     <div className="login-form-container">
       <div className="login-form-card">
-        <div className="form-header">
-          <h2>Iniciar Sesión</h2>
-          <p>Accede a tu cuenta de la Biblioteca Municipal</p>
-        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -141,14 +142,7 @@ const LoginForm = () => {
           </button>
         </form>
 
-        <div className="login-footer">
-          <p>
-            ¿No tienes una cuenta? 
-            <Link to="/register" className="register-link">
-              Regístrate aquí
-            </Link>
-          </p>
-        </div>
+
       </div>
     </div>
   );

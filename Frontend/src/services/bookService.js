@@ -1,11 +1,20 @@
-import api from './apiService';
+import { getAllBooks as getAllBooksApi, getBooksByType as getBooksByTypeApi, createBook as createBookApi, findBookByTitle as findBookByTitleApi } from './apiService';
 
 const bookService = {
   // Obtener todos los libros
   getAllBooks: async () => {
     try {
-      const response = await api.get('/books');
-      return response.data;
+      const response = await getAllBooksApi();
+      // Si la respuesta es un array directamente, devuélvela así
+      if (Array.isArray(response)) {
+        return { data: response };
+      }
+      // Si la respuesta es un objeto con una propiedad 'data', úsala
+      if (response && Array.isArray(response.data)) {
+        return response;
+      }
+      // Si la respuesta es un objeto con los libros en otra propiedad, ajústalo aquí
+      return { data: [] };
     } catch (error) {
       throw new Error('Error al obtener libros: ' + error.message);
     }
@@ -14,58 +23,28 @@ const bookService = {
   // Obtener libros por tipo
   getBooksByType: async (type) => {
     try {
-      const response = await api.get(`/books/type/${type}`);
-      return response.data;
+      const response = await getBooksByTypeApi(type);
+      return response;
     } catch (error) {
       throw new Error('Error al obtener libros por tipo: ' + error.message);
-    }
-  },
-
-  // Obtener libro por ID
-  getBookById: async (id) => {
-    try {
-      const response = await api.get(`/books/${id}`);
-      return response.data;
-    } catch (error) {
-      throw new Error('Error al obtener libro: ' + error.message);
     }
   },
 
   // Crear nuevo libro (Admin)
   createBook: async (bookData) => {
     try {
-      const response = await api.post('/books', bookData);
-      return response.data;
+      const response = await createBookApi(bookData);
+      return response;
     } catch (error) {
       throw new Error('Error al crear libro: ' + error.message);
     }
   },
 
-  // Actualizar libro (Admin)
-  updateBook: async (id, bookData) => {
-    try {
-      const response = await api.put(`/books/${id}`, bookData);
-      return response.data;
-    } catch (error) {
-      throw new Error('Error al actualizar libro: ' + error.message);
-    }
-  },
-
-  // Eliminar libro (Admin)
-  deleteBook: async (id) => {
-    try {
-      const response = await api.delete(`/books/${id}`);
-      return response.data;
-    } catch (error) {
-      throw new Error('Error al eliminar libro: ' + error.message);
-    }
-  },
-
-  // Buscar libros
+  // Buscar libros por título
   searchBooks: async (query) => {
     try {
-      const response = await api.get(`/books/search?q=${query}`);
-      return response.data;
+      const response = await findBookByTitleApi(query);
+      return response;
     } catch (error) {
       throw new Error('Error al buscar libros: ' + error.message);
     }

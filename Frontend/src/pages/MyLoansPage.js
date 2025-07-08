@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import Layout from '../components/common/Layout';
 import loanService from '../services/loanService';
 import FineCard from '../components/fines/FineCard';
 import fineService from '../services/fineService';
@@ -21,6 +22,7 @@ const MyLoansPage = () => {
   const loadMyLoans = async () => {
     try {
       setLoading(true);
+      console.log("Usuario actual:", user);
       const response = await loanService.getLoansByUser(user.id);
       setLoans(response.data);
     } catch (err) {
@@ -109,138 +111,144 @@ const MyLoansPage = () => {
 
   if (loading) {
     return (
-      <div className="my-loans-page">
-        <LoadingSpinner />
-      </div>
+      <Layout>
+        <div className="my-loans-page">
+          <LoadingSpinner />
+        </div>
+      </Layout>
     );
   }
 
   if (error) {
     return (
-      <div className="my-loans-page">
-        <div className="error-message">
-          <h2>Error</h2>
-          <p>{error}</p>
-          <button className="btn btn-primary" onClick={loadMyLoans}>
-            Reintentar
-          </button>
+      <Layout>
+        <div className="my-loans-page">
+          <div className="error-message">
+            <h2>Error</h2>
+            <p>{error}</p>
+            <button className="btn btn-primary" onClick={loadMyLoans}>
+              Reintentar
+            </button>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="my-loans-page">
-      <div className="page-header">
-        <h1>Mis Préstamos</h1>
-        <p>Gestiona tus libros prestados y historial de préstamos</p>
-      </div>
-
-      <div className="loans-filters">
-        <button 
-          className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          Todos ({loans.length})
-        </button>
-        <button 
-          className={`filter-btn ${filter === 'active' ? 'active' : ''}`}
-          onClick={() => setFilter('active')}
-        >
-          Activos ({loans.filter(l => l.status === 'ACTIVE').length})
-        </button>
-        <button 
-          className={`filter-btn ${filter === 'returned' ? 'active' : ''}`}
-          onClick={() => setFilter('returned')}
-        >
-          Devueltos ({loans.filter(l => l.status === 'RETURNED').length})
-        </button>
-        <button 
-          className={`filter-btn ${filter === 'overdue' ? 'active' : ''}`}
-          onClick={() => setFilter('overdue')}
-        >
-          Vencidos ({loans.filter(l => {
-            const dueDate = new Date(l.dueDate);
-            return l.status === 'ACTIVE' && dueDate < new Date();
-          }).length})
-        </button>
-      </div>
-
-      {filteredLoans.length === 0 ? (
-        <div className="no-loans">
-          <span className="no-loans-icon">📚</span>
-          <h3>No tienes préstamos</h3>
-          <p>
-            {filter === 'all' 
-              ? 'Aún no has solicitado ningún préstamo'
-              : `No tienes préstamos ${filter === 'active' ? 'activos' : filter === 'returned' ? 'devueltos' : 'vencidos'}`
-            }
-          </p>
+    <Layout>
+      <div className="my-loans-page">
+        <div className="page-header">
+          <h1>Mis Préstamos</h1>
+          <p>Gestiona tus libros prestados y historial de préstamos</p>
         </div>
-      ) : (
-        <div className="loans-grid">
-          {filteredLoans.map(loan => (
-            <div key={loan.id} className="loan-card">
-              <div className="loan-header">
-                <div className="book-info">
-                  <h3 className="book-title">{loan.book?.title || 'Título no disponible'}</h3>
-                  <p className="book-author">{loan.book?.author || 'Autor no disponible'}</p>
-                  <p className="book-isbn">ISBN: {loan.book?.isbn || 'N/A'}</p>
-                </div>
-                <div className={`loan-status ${getStatusColor(loan)}`}>
-                  {getStatusText(loan)}
-                </div>
-              </div>
 
-              <div className="loan-details">
-                <div className="loan-dates">
-                  <div className="date-item">
-                    <span className="date-label">Fecha de préstamo:</span>
-                    <span className="date-value">{formatDate(loan.loanDate)}</span>
+        <div className="loans-filters">
+          <button 
+            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            Todos ({loans.length})
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'active' ? 'active' : ''}`}
+            onClick={() => setFilter('active')}
+          >
+            Activos ({loans.filter(l => l.status === 'ACTIVE').length})
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'returned' ? 'active' : ''}`}
+            onClick={() => setFilter('returned')}
+          >
+            Devueltos ({loans.filter(l => l.status === 'RETURNED').length})
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'overdue' ? 'active' : ''}`}
+            onClick={() => setFilter('overdue')}
+          >
+            Vencidos ({loans.filter(l => {
+              const dueDate = new Date(l.dueDate);
+              return l.status === 'ACTIVE' && dueDate < new Date();
+            }).length})
+          </button>
+        </div>
+
+        {filteredLoans.length === 0 ? (
+          <div className="no-loans">
+            <span className="no-loans-icon">📚</span>
+            <h3>No tienes préstamos</h3>
+            <p>
+              {filter === 'all' 
+                ? 'Aún no has solicitado ningún préstamo'
+                : `No tienes préstamos ${filter === 'active' ? 'activos' : filter === 'returned' ? 'devueltos' : 'vencidos'}`
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="loans-grid">
+            {filteredLoans.map(loan => (
+              <div key={loan.id} className="loan-card">
+                <div className="loan-header">
+                  <div className="book-info">
+                    <h3 className="book-title">{loan.book?.title || 'Título no disponible'}</h3>
+                    <p className="book-author">{loan.book?.author || 'Autor no disponible'}</p>
+                    <p className="book-isbn">ISBN: {loan.book?.isbn || 'N/A'}</p>
                   </div>
-                  <div className="date-item">
-                    <span className="date-label">Fecha de vencimiento:</span>
-                    <span className="date-value">{formatDate(loan.dueDate)}</span>
+                  <div className={`loan-status ${getStatusColor(loan)}`}>
+                    {getStatusText(loan)}
                   </div>
-                  {loan.returnDate && (
+                </div>
+
+                <div className="loan-details">
+                  <div className="loan-dates">
                     <div className="date-item">
-                      <span className="date-label">Fecha de devolución:</span>
-                      <span className="date-value">{formatDate(loan.returnDate)}</span>
+                      <span className="date-label">Fecha de préstamo:</span>
+                      <span className="date-value">{formatDate(loan.loanDate)}</span>
+                    </div>
+                    <div className="date-item">
+                      <span className="date-label">Fecha de vencimiento:</span>
+                      <span className="date-value">{formatDate(loan.dueDate)}</span>
+                    </div>
+                    {loan.returnDate && (
+                      <div className="date-item">
+                        <span className="date-label">Fecha de devolución:</span>
+                        <span className="date-value">{formatDate(loan.returnDate)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {loan.status === 'ACTIVE' && (
+                    <div className="loan-actions">
+                      <button 
+                        className="btn btn-primary btn-small"
+                        onClick={() => handleReturnBook(loan.id)}
+                      >
+                        Devolver Libro
+                      </button>
+                      <button 
+                        className="btn btn-secondary btn-small"
+                        onClick={() => handleRenewLoan(loan.id)}
+                      >
+                        Renovar Préstamo
+                      </button>
+                    </div>
+                  )}
+
+                  {loan.fine && (
+                    <div className="loan-fine">
+                      <span className="fine-icon">⚠️</span>
+                      <span className="fine-text">
+                        Multa: ${loan.fine.amount} - {loan.fine.status}
+                      </span>
                     </div>
                   )}
                 </div>
-
-                {loan.status === 'ACTIVE' && (
-                  <div className="loan-actions">
-                    <button 
-                      className="btn btn-primary btn-small"
-                      onClick={() => handleReturnBook(loan.id)}
-                    >
-                      Devolver Libro
-                    </button>
-                    <button 
-                      className="btn btn-secondary btn-small"
-                      onClick={() => handleRenewLoan(loan.id)}
-                    >
-                      Renovar Préstamo
-                    </button>
-                  </div>
-                )}
-
-                {loan.fine && (
-                  <div className="loan-fine">
-                    <span className="fine-icon">⚠️</span>
-                    <span className="fine-text">
-                      Multa: ${loan.fine.amount} - {loan.fine.status}
-                    </span>
-                  </div>
-                )}
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 };
 

@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import BookCard from '../components/books/BookCard';
 import BookFilter from '../components/books/BookFilter';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import Layout from '../components/common/Layout';
 import bookService from '../services/bookService';
 import loanService from '../services/loanService';
+import fineService from '../services/fineService';
 import '../styles/BooksPage.css';
 
 const BooksPage = () => {
@@ -16,6 +19,7 @@ const BooksPage = () => {
   const [booksPerPage] = useState(12);
   
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadBooks();
@@ -25,18 +29,23 @@ const BooksPage = () => {
     try {
       setLoading(true);
       const response = await bookService.getAllBooks();
-      setBooks(response.data);
-      setFilteredBooks(response.data);
+      console.log('Libros recibidos:', response.data);
+      const booksData = response?.data || [];
+      setBooks(booksData);
+      setFilteredBooks(booksData);
     } catch (err) {
       setError('Error al cargar los libros');
       console.error('Error loading books:', err);
+      // Asegurar que siempre tengamos arrays válidos
+      setBooks([]);
+      setFilteredBooks([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleFilterChange = (filters) => {
-    let filtered = books;
+    let filtered = books || [];
 
     // Filtrar por tipo
     if (filters.type) {
@@ -45,11 +54,17 @@ const BooksPage = () => {
       );
     }
 
-    // Filtrar por estado
-    if (filters.status) {
-      filtered = filtered.filter(book => 
-        book.status?.toLowerCase() === filters.status.toLowerCase()
-      );
+    // Filtrar por disponibilidad
+    if (filters.availability) {
+      if (filters.availability.toLowerCase() === 'available') {
+        filtered = filtered.filter(book => 
+          book.available === true || book.status?.toLowerCase() === 'disponible'
+        );
+      } else if (filters.availability.toLowerCase() === 'borrowed') {
+        filtered = filtered.filter(book => 
+          book.available === false || book.status?.toLowerCase() === 'prestado'
+        );
+      }
     }
 
     // Filtrar por género
@@ -66,21 +81,14 @@ const BooksPage = () => {
       );
     }
 
-    setFilteredBooks(filtered);
-    setCurrentPage(1);
-  };
-
-  const handleSearchChange = (searchTerm) => {
-    if (!searchTerm.trim()) {
-      setFilteredBooks(books);
-      return;
+    // Filtrar por término de búsqueda
+    if (filters.searchTerm && filters.searchTerm.trim()) {
+      filtered = filtered.filter(book =>
+        (book.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        book.author?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        book.isbn?.toLowerCase().includes(filters.searchTerm.toLowerCase()))
+      );
     }
-
-    const filtered = books.filter(book => 
-      book.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.isbn?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     setFilteredBooks(filtered);
     setCurrentPage(1);
@@ -102,11 +110,19 @@ const BooksPage = () => {
     }
   };
 
+  const handleCreateLoan = () => {
+    navigate('/loan');
+  };
+
+  const handleViewFines = () => {
+    navigate('/my-fines');
+  };
+
   // Paginación
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
-  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+  const currentBooks = (filteredBooks || []).slice(indexOfFirstBook, indexOfLastBook);
+  const totalPages = Math.ceil((filteredBooks || []).length / booksPerPage);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -115,99 +131,120 @@ const BooksPage = () => {
 
   if (loading) {
     return (
-      <div className="books-page">
-        <LoadingSpinner />
-      </div>
+      <Layout>
+        <div className="books-page">
+          <LoadingSpinner />
+        </div>
+      </Layout>
     );
   }
 
   if (error) {
     return (
-      <div className="books-page">
-        <div className="error-message">
-          <h2>Error</h2>
-          <p>{error}</p>
-          <button className="btn btn-primary" onClick={loadBooks}>
-            Reintentar
-          </button>
+      <Layout>
+        <div className="books-page">
+          <div className="error-message">
+            <h2>Error</h2>
+            <p>{error}</p>
+            <button className="btn btn-primary" onClick={loadBooks}>
+              Reintentar
+            </button>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="books-page">
-      <div className="books-header">
-        <h1>Catálogo de Libros</h1>
-        <p>Explora nuestra colección de {books.length} libros disponibles</p>
-      </div>
-
-      <div className="books-content">
-        <div className="books-sidebar">
-          <BookFilter 
-            onFilterChange={handleFilterChange}
-            onSearchChange={handleSearchChange}
-          />
-        </div>
-
-        <div className="books-main">
-          <div className="books-results-info">
-            <p>Mostrando {currentBooks.length} de {filteredBooks.length} libros</p>
+    <Layout>
+      <div className="books-page">
+        {console.log('Usuario autenticado:', user)}
+        <div className="books-content">
+          <div className="books-sidebar">
+            <BookFilter 
+              onFilterChange={handleFilterChange}
+            />
           </div>
 
-          {currentBooks.length === 0 ? (
-            <div className="no-books">
-              <span className="no-books-icon">📚</span>
-              <h3>No se encontraron libros</h3>
-              <p>Intenta ajustar tus filtros de búsqueda</p>
+          {user?.roleId === 2 && (
+            <div className="books-header-actions" style={{ justifyContent: 'center', margin: '1.5rem 0', display: 'flex', gap: '1rem' }}>
+              <button 
+                className="btn btn-primary"
+                onClick={() => navigate('/my-loans')}
+                title="Ver mis préstamos"
+              >
+                📚 Ver mis Préstamos
+              </button>
+              <button 
+                className="btn btn-secondary"
+                onClick={handleViewFines}
+                title="Ver mis deudas"
+              >
+                💰 Ver Mis Multas
+              </button>
             </div>
-          ) : (
-            <>
-              <div className="books-grid">
-                {currentBooks.map(book => (
-                  <BookCard
-                    key={book.id}
-                    book={book}
-                    onBorrow={handleBorrow}
-                    userRole={user?.role}
-                  />
-                ))}
-              </div>
-
-              {totalPages > 1 && (
-                <div className="pagination">
-                  <button
-                    className="pagination-btn"
-                    onClick={() => paginate(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    ← Anterior
-                  </button>
-                  
-                  {[...Array(totalPages)].map((_, index) => (
-                    <button
-                      key={index + 1}
-                      className={`pagination-btn ${currentPage === index + 1 ? 'active' : ''}`}
-                      onClick={() => paginate(index + 1)}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-                  
-                  <button
-                    className="pagination-btn"
-                    onClick={() => paginate(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Siguiente →
-                  </button>
-                </div>
-              )}
-            </>
           )}
+
+          <div className="books-main">
+            <div className="books-results-info">
+              <p>Mostrando {currentBooks.length} de {filteredBooks.length} libros</p>
+            </div>
+
+            {currentBooks.length === 0 ? (
+              <div className="no-books">
+                <span className="no-books-icon">📚</span>
+                <h3>No se encontraron libros</h3>
+                <p>Intenta ajustar tus filtros de búsqueda</p>
+              </div>
+            ) : (
+              <>
+                <div className="books-grid">
+                  {/* Card para crear préstamo manual - eliminada para READER */}
+                  {currentBooks.map(book => (
+                    <BookCard
+                      key={book.id}
+                      book={book}
+                      onBorrow={handleBorrow}
+                      userRole={user?.role}
+                    />
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      className="pagination-btn"
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ← Anterior
+                    </button>
+                    
+                    {[...Array(totalPages)].map((_, index) => (
+                      <button
+                        key={index + 1}
+                        className={`pagination-btn ${currentPage === index + 1 ? 'active' : ''}`}
+                        onClick={() => paginate(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    ))}
+                    
+                    <button
+                      className="pagination-btn"
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente →
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

@@ -23,7 +23,7 @@ const Navigation = () => {
   };
 
   const getUserRole = () => {
-    return user?.role || user?.roles?.[0] || 'READER';
+    return user?.roleId || user?.role || 2; // Valor por defecto: 2 (Lector)
   };
 
   // Navegación para usuarios no autenticados
@@ -122,12 +122,12 @@ const Navigation = () => {
   }
 
   // Navegación para ADMIN
-  if (getUserRole() === 'ADMIN') {
+  if (getUserRole() === 1) {
     return (
       <nav className="bg-red-600 text-white shadow-lg">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center py-4">
-            <Link to="/admin/dashboard" className="text-2xl font-bold hover:text-red-200">
+            <Link to="/admin/books" className="text-2xl font-bold hover:text-red-200">
               🔧 Panel Administrador
             </Link>
             
@@ -142,29 +142,30 @@ const Navigation = () => {
                 📚 Gestionar Libros
               </Link>
               <Link
-                to="/admin/bookings"
+                to="/admin/loans"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/admin/bookings') ? 'bg-red-700' : 'hover:bg-red-700'
+                  isActive('/admin/loans') ? 'bg-red-700' : 'hover:bg-red-700'
                 }`}
               >
                 📋 Préstamos
               </Link>
               <Link
-                to="/admin/returns"
+                to="/admin/return"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/admin/returns') ? 'bg-red-700' : 'hover:bg-red-700'
+                  isActive('/admin/return') ? 'bg-red-700' : 'hover:bg-red-700'
                 }`}
               >
-                📤 Devoluciones
+                📤 Gestión Devoluciones
               </Link>
               <Link
-                to="/admin/readers"
+                to="/admin/search-reader"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/admin/readers') ? 'bg-red-700' : 'hover:bg-red-700'
+                  isActive('/admin/search-reader') ? 'bg-red-700' : 'hover:bg-red-700'
                 }`}
               >
                 👥 Gestionar Lectores
               </Link>
+              
               <div className="flex items-center space-x-2 border-l border-red-700 pl-4">
                 <span className="text-sm">👨‍💼 {user?.email || user?.name}</span>
                 <button
@@ -176,20 +177,16 @@ const Navigation = () => {
               </div>
             </div>
 
-            {/* Menú móvil */}
-            <div className="md:hidden">
-              <button
-                onClick={toggleMenu}
-                className="text-white focus:outline-none hover:text-red-200"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
+            {/* Botón hamburguesa para móvil */}
+            <button
+              onClick={toggleMenu}
+              className="md:hidden p-2 rounded-md hover:bg-red-700 transition-colors"
+            >
+              <i className="fas fa-bars"></i>
+            </button>
           </div>
 
-          {/* Menú móvil desplegable */}
+          {/* Menú móvil */}
           {isMenuOpen && (
             <div className="md:hidden pb-4 border-t border-red-700">
               <Link
@@ -200,21 +197,21 @@ const Navigation = () => {
                 📚 Gestionar Libros
               </Link>
               <Link
-                to="/admin/bookings"
+                to="/admin/loans"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-red-700 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 📋 Préstamos
               </Link>
               <Link
-                to="/admin/returns"
+                to="/admin/return"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-red-700 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                📤 Devoluciones
+                📤 Gestión Devoluciones
               </Link>
               <Link
-                to="/admin/readers"
+                to="/admin/search-reader"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-red-700 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -237,37 +234,37 @@ const Navigation = () => {
   }
 
   // Navegación para LECTOR
-  if (getUserRole() === 'READER') {
+  if (getUserRole() === 2) {
     return (
       <nav className="bg-green-600 text-white shadow-lg">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center py-4">
-            <Link to="/reader/dashboard" className="text-2xl font-bold hover:text-green-200">
+            <Link to="/books" className="text-2xl font-bold hover:text-green-200">
               📖 Mi Biblioteca
             </Link>
             
             {/* Menú desktop */}
             <div className="hidden md:flex space-x-4 items-center">
               <Link
-                to="/reader/books"
+                to="/books"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/reader/books') ? 'bg-green-700' : 'hover:bg-green-700'
+                  isActive('/books') ? 'bg-green-700' : 'hover:bg-green-700'
                 }`}
               >
                 📚 Ver Libros
               </Link>
               <Link
-                to="/reader/my-bookings"
+                to="/my-loans"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/reader/my-bookings') ? 'bg-green-700' : 'hover:bg-green-700'
+                  isActive('/my-loans') ? 'bg-green-700' : 'hover:bg-green-700'
                 }`}
               >
                 📋 Mis Préstamos
               </Link>
               <Link
-                to="/reader/my-fines"
+                to="/my-fines"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/reader/my-fines') ? 'bg-green-700' : 'hover:bg-green-700'
+                  isActive('/my-fines') ? 'bg-green-700' : 'hover:bg-green-700'
                 }`}
               >
                 💰 Mis Multas
@@ -300,21 +297,21 @@ const Navigation = () => {
           {isMenuOpen && (
             <div className="md:hidden pb-4 border-t border-green-700">
               <Link
-                to="/reader/books"
+                to="/books"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-700 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 📚 Ver Libros
               </Link>
               <Link
-                to="/reader/my-bookings"
+                to="/my-loans"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-700 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 📋 Mis Préstamos
               </Link>
               <Link
-                to="/reader/my-fines"
+                to="/my-fines"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:bg-green-700 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
