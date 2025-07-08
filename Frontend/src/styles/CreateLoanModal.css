@@ -1,0 +1,170 @@
+/* Estilos para el modal de crear préstamos */
+.create-loan-modal {
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.create-loan-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.create-loan-modal .modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.create-loan-modal .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.create-loan-modal .close-btn:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.create-loan-form {
+  padding: 1.5rem;
+}
+
+.create-loan-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.create-loan-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.create-loan-form input,
+.create-loan-form select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #fff;
+}
+
+.create-loan-form input:focus,
+.create-loan-form select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.create-loan-form input.error,
+.create-loan-form select.error {
+  border-color: #dc3545;
+}
+
+.create-loan-form input:disabled,
+.create-loan-form select:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.create-loan-form .error-message {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.create-loan-form .submit-error {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.create-loan-modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 1.5rem;
+}
+
+.create-loan-modal .modal-actions .btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.create-loan-modal .modal-actions .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.create-loan-modal .modal-actions .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.create-loan-modal .modal-actions .btn-secondary:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.create-loan-modal .modal-actions .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.create-loan-modal .modal-actions .btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .create-loan-modal {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .create-loan-form {
+    padding: 1rem;
+  }
+  
+  .create-loan-modal .modal-actions {
+    flex-direction: column;
+  }
+  
+  .create-loan-modal .modal-actions .btn {
+    width: 100%;
+  }
+} 
