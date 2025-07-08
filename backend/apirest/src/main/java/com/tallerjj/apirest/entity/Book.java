@@ -2,7 +2,6 @@ package com.tallerjj.apirest.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 
 @Entity
 @Table(name = "book")
@@ -26,7 +25,4 @@ public class Book {
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     private byte[] image64;
-
-    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<CopyBook> copyBooks;
 } 

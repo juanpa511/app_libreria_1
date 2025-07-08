@@ -1,9 +1,7 @@
 package com.tallerjj.apirest.security;
 
 import com.tallerjj.apirest.entity.User;
-import com.tallerjj.apirest.entity.Rol;
 import com.tallerjj.apirest.repository.UserRepository;
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,8 +9,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,17 +19,25 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmailWithRoles(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
+        // Verificar si el usuario está activo
         if (!user.isState()) {
             throw new UsernameNotFoundException("Usuario inactivo: " + email);
         }
 
-        Set<Rol> rolesCopy = user.getRoles() != null ? Set.copyOf(user.getRoles()) : Set.of();
-        List<SimpleGrantedAuthority> authorities = rolesCopy.stream()
+        // Convertir los roles a SimpleGrantedAuthority
+        var authorities = user.getRoles().stream()
                 .map(rol -> new SimpleGrantedAuthority("ROLE_" + rol.getName().toUpperCase()))
-                .toList();
+                .collect(Collectors.toList());
+
+        // Log temporal para verificar roles
+        System.out.println("=== DEBUG ROLES ===");
+        System.out.println("Usuario: " + email);
+        System.out.println("Roles encontrados: " + user.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList()));
+        System.out.println("Authorities: " + authorities);
+        System.out.println("==================");
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())

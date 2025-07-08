@@ -10,7 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 public class UserRol {
     @Id
-    @Column(name = "id_rol_user")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 

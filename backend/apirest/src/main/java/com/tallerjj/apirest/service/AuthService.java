@@ -15,7 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -74,8 +73,11 @@ public class AuthService {
 
         // Generar token JWT
         String token = jwtProvider.generateToken(user.getEmail());
-        String roleName = "LECTOR";
-        return new AuthResponse(token, "Usuario registrado exitosamente", user.getEmail(), roleName);
+
+        // Obtener el ID del primer rol (asumiendo que un usuario tiene al menos un rol)
+        Integer rolId = user.getRoles().iterator().next().getIdRol();
+
+        return new AuthResponse(token, "Usuario registrado exitosamente", user.getEmail(), rolId);
     }
 
     /**
@@ -85,22 +87,24 @@ public class AuthService {
      */
     public AuthResponse login(LoginRequest request) {
         try {
+            // Autenticar usuario
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
-            // Consulta nativa para obtener el rol
-            List<Rol> rolesNativos = userRepository.findRolesByUserEmail(request.getEmail());
-            if (rolesNativos.isEmpty()) {
-                throw new RuntimeException("El usuario no tiene rol asignado");
-            }
-            String roleName = rolesNativos.get(0).getName();
+            // Obtener el usuario para acceder a sus roles
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+            // Generar token JWT
             String token = jwtProvider.generateToken(request.getEmail());
 
-            return new AuthResponse(token, "Login exitoso", request.getEmail(), roleName);
+            // Obtener el ID del primer rol (asumiendo que un usuario tiene al menos un rol)
+            Integer rolId = user.getRoles().iterator().next().getIdRol();
+
+            return new AuthResponse(token, "Login exitoso", request.getEmail(), rolId);
         } catch (Exception e) {
-            return new AuthResponse(null, "Credenciales inválidas", null, null);
+            throw new RuntimeException("Credenciales inválidas");
         }
     }
 } 

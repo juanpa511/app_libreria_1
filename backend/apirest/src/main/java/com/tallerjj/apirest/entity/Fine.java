@@ -18,6 +18,6 @@ public class Fine {
     private boolean state;
 
     @ManyToOne
-    @JoinColumn(name = "user_fk")
+    @JoinColumn(name = "user")
     private User user;
 } 
