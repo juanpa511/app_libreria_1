@@ -1,5 +1,7 @@
 package com.tallerjj.apirest.security;
 
+import com.tallerjj.apirest.entity.User;
+import com.tallerjj.apirest.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
@@ -24,6 +27,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, 
@@ -35,14 +41,26 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
             if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
                 String email = jwtProvider.getEmailFromToken(jwt);
-
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                UsernamePasswordAuthenticationToken authentication = 
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                // Verificar si el usuario existe y obtener su versión actual
+                Optional<User> userOpt = userRepository.findByEmail(email);
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    
+                    // Validar que el token no esté invalidado por cambios de usuario
+                    if (jwtProvider.validateToken(jwt, user.getUserVersion())) {
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                        UsernamePasswordAuthenticationToken authentication = 
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    } else {
+                        // Token invalidado por cambios de usuario
+                        logger.warn("Token invalidado para usuario: " + email + " - Cambios detectados en el usuario");
+                    }
+                }
             }
         } catch (Exception ex) {
             logger.error("No se pudo establecer la autenticación del usuario", ex);

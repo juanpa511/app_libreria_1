@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -113,11 +112,30 @@ public class BookingController {
             // Obtener información del usuario autenticado
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String currentUserEmail = authentication.getName();
-            boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            
+            // Verificar si es ADMIN o LECTOR
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+            boolean isLector = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_LECTOR"));
+            
+            // Debug logs
+            System.out.println("=== DEBUG BOOKING CONTROLLER ===");
+            System.out.println("Email solicitado: " + email);
+            System.out.println("Usuario autenticado: " + currentUserEmail);
+            System.out.println("Es admin: " + isAdmin);
+            System.out.println("Es lector: " + isLector);
+            System.out.println("Authorities: " + authentication.getAuthorities());
+            System.out.println("================================");
             
             // Si es LECTOR, solo puede ver sus propias reservas
-            if (!isAdmin && !currentUserEmail.equals(email)) {
-                return ResponseEntity.status(403).body("No tienes permisos para ver reservas de otros usuarios");
+            if (isLector && !currentUserEmail.equals(email)) {
+                return ResponseEntity.status(403).body("No tienes permisos para ver reservas de otros usuarios. Tu email: " + currentUserEmail + ", Email solicitado: " + email);
+            }
+            
+            // Si no es ni ADMIN ni LECTOR, no tiene permisos
+            if (!isAdmin && !isLector) {
+                return ResponseEntity.status(403).body("No tienes permisos para acceder a este recurso");
             }
             
             // Buscar reservas por email

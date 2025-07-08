@@ -47,9 +47,14 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos
-                .requestMatchers("/auth/register", "/auth/login").permitAll()
+                .requestMatchers("/auth/register", "/auth/login", "/auth/refresh").permitAll()
                 .requestMatchers("/book/all/**").permitAll()
-                .requestMatchers("/test/**").permitAll()
+                .requestMatchers("/test/hello", "/test/status").permitAll()
+                
+                // Endpoints de prueba con autenticación
+                .requestMatchers("/test/auth-info").authenticated()
+                .requestMatchers("/test/admin-only").hasRole("ADMIN")
+                .requestMatchers("/test/lector-only").hasRole("LECTOR")
                 
                 // Endpoints de ADMIN
                 .requestMatchers("/book/new", "/book/find/**", "/book/newcopy", "/book/copy/**").hasRole("ADMIN")

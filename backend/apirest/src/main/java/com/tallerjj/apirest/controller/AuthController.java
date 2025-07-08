@@ -51,6 +51,23 @@ public class AuthController {
     }
 
     /**
+     * Refresca el token JWT del usuario
+     * POST /api/auth/refresh
+     * @param request token actual del usuario
+     * @return nueva respuesta con token JWT actualizado
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody LoginRequest request) {
+        try {
+            AuthResponse response = authService.refreshToken(request.getEmail());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new AuthResponse(null, e.getMessage(), null, null));
+        }
+    }
+
+    /**
      * Endpoint de prueba para verificar que el controlador funciona
      * GET /api/auth/test
      * @return mensaje de prueba

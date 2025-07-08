@@ -46,6 +46,25 @@ public class JwtProvider {
     }
 
     /**
+     * Genera un token JWT con versión de usuario para invalidación
+     * @param email el email del usuario
+     * @param userVersion la versión del usuario (timestamp de última modificación)
+     * @return el token JWT generado
+     */
+    public String generateToken(String email, Long userVersion) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("userVersion", userVersion)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    /**
      * Extrae el email del usuario desde el token JWT
      * @param token el token JWT
      * @return el email del usuario
@@ -61,6 +80,21 @@ public class JwtProvider {
     }
 
     /**
+     * Extrae la versión del usuario desde el token JWT
+     * @param token el token JWT
+     * @return la versión del usuario o null si no existe
+     */
+    public Long getUserVersionFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userVersion", Long.class);
+    }
+
+    /**
      * Valida si el token JWT es válido
      * @param token el token JWT a validar
      * @return true si el token es válido, false en caso contrario
@@ -72,6 +106,34 @@ public class JwtProvider {
                     .build()
                     .parseClaimsJws(token);
             return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Valida si el token JWT es válido y no ha sido invalidado por cambios de usuario
+     * @param token el token JWT a validar
+     * @param currentUserVersion la versión actual del usuario en la BD
+     * @return true si el token es válido y actualizado, false en caso contrario
+     */
+    public boolean validateToken(String token, Long currentUserVersion) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Long tokenUserVersion = claims.get("userVersion", Long.class);
+            
+            // Si no hay versión en el token, considerarlo válido (backward compatibility)
+            if (tokenUserVersion == null) {
+                return true;
+            }
+
+            // Si la versión del token es menor que la actual, el token está invalidado
+            return tokenUserVersion >= currentUserVersion;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
