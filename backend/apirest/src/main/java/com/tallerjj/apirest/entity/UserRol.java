@@ -10,14 +10,15 @@ import lombok.*;
 @AllArgsConstructor
 public class UserRol {
     @Id
+    @Column(name = "id_rol_user")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "user_email")
+    @JoinColumn(name = "user_fk")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "rol_id_rol")
+    @JoinColumn(name = "rol_fk")
     private Rol rol;
 } 

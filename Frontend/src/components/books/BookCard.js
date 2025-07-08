@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
-import '../styles/BookCard.css';
+import { useAuth } from '../../context/AuthContext';
+import '../../styles/BookCard.css';
 
 const BookCard = ({ book, onBorrow, onEdit, onDelete, showActions = true }) => {
   const { user } = useAuth();

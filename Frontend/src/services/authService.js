@@ -1,4 +1,4 @@
-import api from './api';
+import api from './apiService';
 
 export const authService = {
   // Iniciar sesión

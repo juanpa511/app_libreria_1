@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class User {
     @Id
+    @Column(length = 255)
     private String email;
 
     private String lastName;
@@ -19,11 +20,11 @@ public class User {
     private String password;
     private boolean state;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_rol",
-        joinColumns = @JoinColumn(name = "user_email"),
-        inverseJoinColumns = @JoinColumn(name = "rol_id_rol")
+        joinColumns = @JoinColumn(name = "user_fk", referencedColumnName = "email"),
+        inverseJoinColumns = @JoinColumn(name = "rol_fk", referencedColumnName = "id_rol")
     )
     private Set<Rol> roles;
 

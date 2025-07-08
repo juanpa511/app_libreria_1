@@ -1,7 +1,7 @@
 // src/hooks/useApi.js
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 export const useApi = () => {
   const { logout } = useAuth();

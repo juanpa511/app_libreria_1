@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
       
       const userData = {
         email: response.email || email,
-        role: response.role,
+        role: response.role || 'LECTOR', // Valor por defecto si no viene el rol
         isAdmin: response.role === 'ADMIN',
         isReader: response.role === 'LECTOR'
       };

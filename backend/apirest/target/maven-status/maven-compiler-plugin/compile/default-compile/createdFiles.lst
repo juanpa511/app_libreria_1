@@ -3,6 +3,7 @@ com\tallerjj\apirest\repository\RolRepository.class
 com\tallerjj\apirest\security\JwtProvider.class
 com\tallerjj\apirest\service\BookService.class
 com\tallerjj\apirest\dto\RegisterRequest.class
+com\tallerjj\apirest\controller\StateRequest.class
 com\tallerjj\apirest\security\JwtAuthorizationFilter.class
 com\tallerjj\apirest\ApirestApplication.class
 com\tallerjj\apirest\controller\FineController.class
@@ -15,6 +16,7 @@ com\tallerjj\apirest\entity\Book.class
 com\tallerjj\apirest\entity\Rol.class
 com\tallerjj\apirest\controller\AuthController.class
 com\tallerjj\apirest\entity\User.class
+com\tallerjj\apirest\controller\ReturnRequest.class
 com\tallerjj\apirest\config\SecurityConfig.class
 com\tallerjj\apirest\entity\Booking.class
 com\tallerjj\apirest\entity\UserRol.class

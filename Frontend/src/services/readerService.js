@@ -1,4 +1,4 @@
-import api from './api';
+import api from './apiService';
 
 const readerService = {
   // Obtener todos los lectores (Admin)

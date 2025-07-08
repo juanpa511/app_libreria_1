@@ -11,9 +11,11 @@ import java.util.Set;
 @AllArgsConstructor
 public class Rol {
     @Id
+    @Column(name = "id_rol")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idRol;
 
+    @Column(name = "name")
     private String name;
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)

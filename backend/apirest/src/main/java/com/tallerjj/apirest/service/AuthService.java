@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -73,8 +74,8 @@ public class AuthService {
 
         // Generar token JWT
         String token = jwtProvider.generateToken(user.getEmail());
-
-        return new AuthResponse(token, "Usuario registrado exitosamente", user.getEmail());
+        String roleName = "LECTOR";
+        return new AuthResponse(token, "Usuario registrado exitosamente", user.getEmail(), roleName);
     }
 
     /**
@@ -84,17 +85,22 @@ public class AuthService {
      */
     public AuthResponse login(LoginRequest request) {
         try {
-            // Autenticar usuario
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
-            // Generar token JWT
+            // Consulta nativa para obtener el rol
+            List<Rol> rolesNativos = userRepository.findRolesByUserEmail(request.getEmail());
+            if (rolesNativos.isEmpty()) {
+                throw new RuntimeException("El usuario no tiene rol asignado");
+            }
+            String roleName = rolesNativos.get(0).getName();
+
             String token = jwtProvider.generateToken(request.getEmail());
 
-            return new AuthResponse(token, "Login exitoso", request.getEmail());
+            return new AuthResponse(token, "Login exitoso", request.getEmail(), roleName);
         } catch (Exception e) {
-            throw new RuntimeException("Credenciales inválidas");
+            return new AuthResponse(null, "Credenciales inválidas", null, null);
         }
     }
 } 

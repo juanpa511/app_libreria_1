@@ -1,4 +1,4 @@
-import api from './api';
+import api from './apiService';
 
 const loanService = {
   // Obtener préstamos del usuario actual

@@ -1,7 +1,7 @@
 // src/components/auth/LoginForm.js
 
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import '../../styles/LoginPage.css'; 
 
@@ -23,7 +23,6 @@ const LoginForm = () => {
       ...prev,
       [name]: value
     }));
-    // Limpiar errores cuando el usuario empieza a escribir
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -73,7 +72,8 @@ const LoginForm = () => {
         setErrors({ submit: result.error || 'Error al iniciar sesión' });
       }
     } catch (error) {
-      setErrors({ submit: error.message || 'Error al iniciar sesión' });
+      console.error('Error de login:', error);
+      setErrors({ submit: error.message || 'Error al iniciar sesión. Verifica tus credenciales.' });
     } finally {
       setIsLoading(false);
     }
@@ -122,7 +122,7 @@ const LoginForm = () => {
                 role="button"
                 tabIndex={0}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <i className="fas fa-eye"></i> : <i className="fas fa-eye-slash"></i>}
               </span>
             </div>
             {errors.password && <span className="error-message">{errors.password}</span>}
