@@ -1,60 +1,39 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import LoadingSpinner from './LoadingSpinner';
+import { useAuth } from '../../context/AuthContext';
 
-const ProtectedRoute = ({ children, requiredRole, requireAdmin }) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, requiredRole = null }) => {
+  const { user, isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  // Mostrar spinner mientras se carga la información del usuario
+  // Mostrar loading mientras se verifica la autenticación
   if (loading) {
     return (
-      <div className="protected-route-loading">
-        <LoadingSpinner />
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  // Si no hay usuario autenticado, redirigir al login
-  if (!user) {
+  // Si no está autenticado, redirigir al login
+  if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Validar acceso por rol requerido explícito
-  if (requiredRole && user.role !== requiredRole) {
-    return (
-      <AccessDenied required={requiredRole} current={user.role} />
-    );
+  // Si se requiere un rol específico, verificar que el usuario lo tenga
+  if (requiredRole) {
+    const userRole = user?.roleId || user?.role || 2;
+    
+    if (requiredRole === 1 && userRole !== 1) {
+      return <Navigate to="/unauthorized" replace />;
+    }
+    
+    if (requiredRole === 2 && userRole !== 2) {
+      return <Navigate to="/unauthorized" replace />;
+    }
   }
 
-  // Validar acceso si se pide admin
-  if (requireAdmin && user.role !== 'admin') {
-    return (
-      <AccessDenied required="admin" current={user.role} />
-    );
-  }
-
-  // Acceso permitido
   return children;
 };
-
-// Subcomponente para acceso denegado
-const AccessDenied = ({ required, current }) => (
-  <div className="access-denied">
-    <div className="access-denied-content">
-      <h2>Acceso Denegado</h2>
-      <p>No tienes permisos para acceder a esta página.</p>
-      <p>Rol requerido: {required}</p>
-      <p>Tu rol actual: {current}</p>
-      <button 
-        onClick={() => window.history.back()}
-        className="back-button"
-      >
-        Volver
-      </button>
-    </div>
-  </div>
-);
 
 export default ProtectedRoute;

@@ -1,5 +1,7 @@
+// src/components/auth/LoginForm.js
+
 import React, { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import '../../styles/LoginPage.css'; 
 
@@ -10,6 +12,7 @@ const LoginForm = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -55,19 +58,27 @@ const LoginForm = () => {
     setIsLoading(true);
     try {
       const result = await login(credentials.email, credentials.password);
+      
       if (result.success) {
-        const user = JSON.parse(localStorage.getItem('user'));
-
-        if (user?.role === 'admin') {
+        // Redirigir según el rol del usuario
+        const userRole = result.user.roleId || result.user.role || 2;
+        
+        if (userRole === 1) {
+          // Administrador - redirigir a la página de gestión de libros
           navigate('/admin/books');
+        } else if (userRole === 2) {
+          // Lector - redirigir a la página de libros
+          navigate('/books');
         } else {
+          // Rol desconocido - redirigir a la página de libros
           navigate('/books');
         }
       } else {
         setErrors({ submit: result.error || 'Error al iniciar sesión' });
       }
     } catch (error) {
-      setErrors({ submit: error.message || 'Error al iniciar sesión' });
+      console.error('Error de login:', error);
+      setErrors({ submit: error.message || 'Error al iniciar sesión. Verifica tus credenciales.' });
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +87,7 @@ const LoginForm = () => {
   return (
     <div className="login-form-container">
       <div className="login-form-card">
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -87,21 +99,33 @@ const LoginForm = () => {
               onChange={handleChange}
               className={errors.email ? 'error' : ''}
               placeholder="Ingresa tu email"
+              autoComplete="email"
             />
             {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
 
           <div className="form-group">
             <label htmlFor="password">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={credentials.password}
-              onChange={handleChange}
-              className={errors.password ? 'error' : ''}
-              placeholder="Ingresa tu contraseña"
-            />
+            <div className="input-with-icon">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                value={credentials.password}
+                onChange={handleChange}
+                className={errors.password ? 'error' : ''}
+                placeholder="Ingresa tu contraseña"
+                autoComplete="current-password"
+              />
+              <span
+                className="eye-icon"
+                onClick={() => setShowPassword(!showPassword)}
+                role="button"
+                tabIndex={0}
+              >
+                {showPassword ? <i className="fas fa-eye"></i> : <i className="fas fa-eye-slash"></i>}
+              </span>
+            </div>
             {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
 
@@ -118,8 +142,7 @@ const LoginForm = () => {
           </button>
         </form>
 
-        <div className="login-footer">
-        </div>
+
       </div>
     </div>
   );

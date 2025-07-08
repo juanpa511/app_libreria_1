@@ -15,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -43,21 +46,25 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos
-                .requestMatchers("/auth/register", "/auth/login").permitAll()
+                .requestMatchers("/auth/register", "/auth/login", "/auth/refresh").permitAll()
                 .requestMatchers("/book/all/**").permitAll()
-                .requestMatchers("/test/**").permitAll()
+                .requestMatchers("/test/hello", "/test/status").permitAll()
+                
+                // Endpoints de prueba con autenticación
+                .requestMatchers("/test/auth-info").authenticated()
+                .requestMatchers("/test/admin-only").hasRole("ADMIN")
+                .requestMatchers("/test/lector-only").hasRole("LECTOR")
                 
                 // Endpoints de ADMIN
                 .requestMatchers("/book/new", "/book/find/**", "/book/newcopy", "/book/copy/**").hasRole("ADMIN")
                 .requestMatchers("/booking/new", "/booking/return/**").hasRole("ADMIN")
                 .requestMatchers("/reader/find/**", "/reader/state/**").hasRole("ADMIN")
-                .requestMatchers("/fine/find/**").hasRole("ADMIN")
                 
-                // Endpoints de LECTOR
+                // Endpoints compartidos (ADMIN y LECTOR)
                 .requestMatchers("/booking/find/**").hasAnyRole("ADMIN", "LECTOR")
                 .requestMatchers("/fine/find/**").hasAnyRole("ADMIN", "LECTOR")
                 
@@ -67,5 +74,18 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(java.util.Arrays.asList("*"));
+        configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 } 

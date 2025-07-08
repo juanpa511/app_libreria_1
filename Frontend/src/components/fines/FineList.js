@@ -2,7 +2,7 @@ import React from 'react';
 import FineCard from './FineCard';
 import LoadingSpinner from '../common/LoadingSpinner';
 
-const FineList = ({ fines, loading, onPayFine }) => {
+const FineList = ({ fines, loading, onPayFine, onEditFine, onDeleteFine, isAdmin = false }) => {
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -16,8 +16,8 @@ const FineList = ({ fines, loading, onPayFine }) => {
     );
   }
 
-  const pendingFines = fines.filter(fine => !fine.paid);
-  const paidFines = fines.filter(fine => fine.paid);
+  const pendingFines = fines.filter(fine => !fine.state);
+  const paidFines = fines.filter(fine => fine.state);
 
   return (
     <div className="fine-list">
@@ -27,9 +27,12 @@ const FineList = ({ fines, loading, onPayFine }) => {
           <div className="fines-grid">
             {pendingFines.map(fine => (
               <FineCard 
-                key={fine.id} 
+                key={fine.idFine} 
                 fine={fine} 
                 onPayFine={onPayFine}
+                onEditFine={onEditFine}
+                onDeleteFine={onDeleteFine}
+                isAdmin={isAdmin}
               />
             ))}
           </div>
@@ -42,9 +45,12 @@ const FineList = ({ fines, loading, onPayFine }) => {
           <div className="fines-grid">
             {paidFines.map(fine => (
               <FineCard 
-                key={fine.id} 
+                key={fine.idFine} 
                 fine={fine} 
                 onPayFine={onPayFine}
+                onEditFine={onEditFine}
+                onDeleteFine={onDeleteFine}
+                isAdmin={isAdmin}
               />
             ))}
           </div>

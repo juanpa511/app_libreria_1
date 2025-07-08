@@ -73,9 +73,14 @@ export const API_ENDPOINTS = {
 
 // User Roles
 export const USER_ROLES = {
-  ADMIN: 'ADMIN',
-  LIBRARIAN: 'LIBRARIAN',
-  READER: 'READER',
+  ADMIN: 1,
+  READER: 2,
+};
+
+// Role Names for display
+export const ROLE_NAMES = {
+  1: 'Administrador',
+  2: 'Lector',
 };
 
 // User Status
@@ -331,4 +336,5 @@ export default {
   ROUTES,
   MENU_ITEMS,
   STATUS_COLORS,
+  ROLE_NAMES,
 };

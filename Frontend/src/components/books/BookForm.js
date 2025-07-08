@@ -1,44 +1,48 @@
 import React, { useState } from 'react';
-import '../../styles/BookForm.css'; 
+import '../../styles/BookForm.css';
 
-const BookForm = ({ onSubmit, loading, initialData = null }) => {
+const BookForm = ({ onSubmit, loading = false, initialData = null }) => {
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     author: initialData?.author || '',
+    type: initialData?.type || '',
     isbn: initialData?.isbn || '',
-    genre: initialData?.genre || '',
-    description: initialData?.description || '',
-    publishedYear: initialData?.publishedYear || '',
-    publisher: initialData?.publisher || '',
-    pages: initialData?.pages || '',
-    language: initialData?.language || 'es',
-    copies: initialData?.copies || 1,
-    available: initialData?.available !== undefined ? initialData.available : true
+    image64: initialData?.image64 || ''
   });
   
   const [errors, setErrors] = useState({});
 
-  const genres = [
-    'Ficción', 'No ficción', 'Ciencia ficción', 'Fantasía', 'Misterio',
-    'Romance', 'Thriller', 'Historia', 'Biografía', 'Autoayuda',
-    'Ciencia', 'Tecnología', 'Arte', 'Filosofía', 'Poesía'
-  ];
-
-  const languages = [
-    { code: 'es', name: 'Español' },
-    { code: 'en', name: 'Inglés' },
-    { code: 'fr', name: 'Francés' },
-    { code: 'de', name: 'Alemán' },
-    { code: 'it', name: 'Italiano' },
-    { code: 'pt', name: 'Portugués' }
+  // Tipos de libros según el requerimiento
+  const bookTypes = [
+    { value: '', label: 'Seleccione un tipo' },
+    { value: 'educacion', label: 'Educación' },
+    { value: 'novela', label: 'Novela' },
+    { value: 'aventura', label: 'Aventura' },
+    { value: 'poemas', label: 'Poemas' },
+    { value: 'ciencia', label: 'Ciencia' },
+    { value: 'historia', label: 'Historia' },
+    { value: 'arte', label: 'Arte' },
+    { value: 'tecnologia', label: 'Tecnología' }
   ];
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    const { name, value, type, files } = e.target;
+    
+    if (type === 'file' && files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData(prev => ({
+          ...prev,
+          image64: e.target.result
+        }));
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     
     // Limpiar error cuando el usuario empieza a escribir
     if (errors[name]) {
@@ -60,26 +64,18 @@ const BookForm = ({ onSubmit, loading, initialData = null }) => {
       newErrors.author = 'El autor es requerido';
     }
     
+    if (!formData.type) {
+      newErrors.type = 'El tipo de libro es requerido';
+    }
+    
     if (!formData.isbn.trim()) {
       newErrors.isbn = 'El ISBN es requerido';
-    } else if (!/^\d{10}(\d{3})?$/.test(formData.isbn.replace(/-/g, ''))) {
+    } else if (!/^[0-9]{10}([0-9]{3})?$/.test(formData.isbn.replace(/-/g, ''))) {
       newErrors.isbn = 'El ISBN debe tener 10 o 13 dígitos';
     }
     
-    if (!formData.genre) {
-      newErrors.genre = 'El género es requerido';
-    }
-    
-    if (formData.publishedYear && (formData.publishedYear < 1000 || formData.publishedYear > new Date().getFullYear())) {
-      newErrors.publishedYear = 'El año de publicación no es válido';
-    }
-    
-    if (formData.pages && (formData.pages < 1 || formData.pages > 10000)) {
-      newErrors.pages = 'El número de páginas debe estar entre 1 y 10000';
-    }
-    
-    if (formData.copies < 1) {
-      newErrors.copies = 'Debe haber al menos 1 copia';
+    if (!formData.image64) {
+      newErrors.image64 = 'La imagen es requerida';
     }
     
     setErrors(newErrors);
@@ -89,188 +85,164 @@ const BookForm = ({ onSubmit, loading, initialData = null }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      // Enviar la imagen como string base64 puro (sin el prefijo data:image/...;base64,)
+      let imageBase64 = null;
+      if (formData.image64) {
+        try {
+          imageBase64 = formData.image64.split(',')[1]; // Remover el prefijo data:image/...;base64,
+        } catch (error) {
+          console.error('Error procesando imagen:', error);
+          alert('Error al procesar la imagen. Por favor, selecciona otra imagen.');
+          return;
+        }
+      }
+      
+      const dataToSend = {
+        title: formData.title,
+        author: formData.author,
+        type: formData.type,
+        isbn: formData.isbn,
+        image64: imageBase64
+      };
+      
+      onSubmit(dataToSend);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      author: '',
+      type: '',
+      isbn: '',
+      image64: ''
+    });
+    setErrors({});
   };
 
   return (
     <div className="book-form-container">
-      <h2>{initialData ? 'Editar Libro' : 'Crear Nuevo Libro'}</h2>
+      <div className="form-header">
+        <h2>{initialData ? 'Editar Libro' : 'Crear Nuevo Libro'}</h2>
+        <p>Complete todos los campos requeridos para {initialData ? 'actualizar' : 'agregar'} el libro</p>
+      </div>
       
-      <form onSubmit={handleSubmit} className="book-form">
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="title">Título *</label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className={errors.title ? 'error' : ''}
-              placeholder="Ingrese el título del libro"
-            />
-            {errors.title && <span className="error-message">{errors.title}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="author">Autor *</label>
-            <input
-              type="text"
-              id="author"
-              name="author"
-              value={formData.author}
-              onChange={handleChange}
-              className={errors.author ? 'error' : ''}
-              placeholder="Ingrese el nombre del autor"
-            />
-            {errors.author && <span className="error-message">{errors.author}</span>}
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="isbn">ISBN *</label>
-            <input
-              type="text"
-              id="isbn"
-              name="isbn"
-              value={formData.isbn}
-              onChange={handleChange}
-              className={errors.isbn ? 'error' : ''}
-              placeholder="978-0-123456-78-9"
-            />
-            {errors.isbn && <span className="error-message">{errors.isbn}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="genre">Género *</label>
-            <select
-              id="genre"
-              name="genre"
-              value={formData.genre}
-              onChange={handleChange}
-              className={errors.genre ? 'error' : ''}
-            >
-              <option value="">Seleccione un género</option>
-              {genres.map(genre => (
-                <option key={genre} value={genre}>{genre}</option>
-              ))}
-            </select>
-            {errors.genre && <span className="error-message">{errors.genre}</span>}
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="description">Descripción</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows="4"
-            placeholder="Ingrese una descripción del libro..."
-          />
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="publishedYear">Año de Publicación</label>
-            <input
-              type="number"
-              id="publishedYear"
-              name="publishedYear"
-              value={formData.publishedYear}
-              onChange={handleChange}
-              className={errors.publishedYear ? 'error' : ''}
-              min="1000"
-              max={new Date().getFullYear()}
-            />
-            {errors.publishedYear && <span className="error-message">{errors.publishedYear}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="publisher">Editorial</label>
-            <input
-              type="text"
-              id="publisher"
-              name="publisher"
-              value={formData.publisher}
-              onChange={handleChange}
-              placeholder="Ingrese la editorial"
-            />
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="pages">Páginas</label>
-            <input
-              type="number"
-              id="pages"
-              name="pages"
-              value={formData.pages}
-              onChange={handleChange}
-              className={errors.pages ? 'error' : ''}
-              min="1"
-              max="10000"
-            />
-            {errors.pages && <span className="error-message">{errors.pages}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="language">Idioma</label>
-            <select
-              id="language"
-              name="language"
-              value={formData.language}
-              onChange={handleChange}
-            >
-              {languages.map(lang => (
-                <option key={lang.code} value={lang.code}>{lang.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="copies">Número de Copias *</label>
-            <input
-              type="number"
-              id="copies"
-              name="copies"
-              value={formData.copies}
-              onChange={handleChange}
-              className={errors.copies ? 'error' : ''}
-              min="1"
-            />
-            {errors.copies && <span className="error-message">{errors.copies}</span>}
-          </div>
-
-          <div className="form-group">
-            <label className="checkbox-label">
+      <div className="book-form" onSubmit={handleSubmit}>
+        <div className="form-section">
+          <h3>Información del Libro</h3>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="title">Título *</label>
               <input
-                type="checkbox"
-                name="available"
-                checked={formData.available}
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
                 onChange={handleChange}
+                className={errors.title ? 'error' : ''}
+                placeholder="Ingrese el título del libro"
+                maxLength="200"
               />
-              <span className="checkbox-text">Disponible para préstamo</span>
-            </label>
+              {errors.title && <span className="error-message">{errors.title}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="author">Autor *</label>
+              <input
+                type="text"
+                id="author"
+                name="author"
+                value={formData.author}
+                onChange={handleChange}
+                className={errors.author ? 'error' : ''}
+                placeholder="Ingrese el nombre del autor"
+                maxLength="150"
+              />
+              {errors.author && <span className="error-message">{errors.author}</span>}
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="type">Tipo de Libro *</label>
+              <select
+                id="type"
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                className={errors.type ? 'error' : ''}
+              >
+                {bookTypes.map(type => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
+              {errors.type && <span className="error-message">{errors.type}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="isbn">ISBN *</label>
+              <input
+                type="text"
+                id="isbn"
+                name="isbn"
+                value={formData.isbn}
+                onChange={handleChange}
+                className={errors.isbn ? 'error' : ''}
+                placeholder="Ingrese el ISBN del libro"
+                maxLength="13"
+              />
+              {errors.isbn && <span className="error-message">{errors.isbn}</span>}
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="image">Imagen del Libro *</label>
+              <input
+                type="file"
+                id="image"
+                name="image"
+                onChange={handleChange}
+                className={errors.image64 ? 'error' : ''}
+                accept="image/*"
+              />
+              {errors.image64 && <span className="error-message">{errors.image64}</span>}
+              {formData.image64 && (
+                <div className="image-preview">
+                  <img src={formData.image64} alt="Vista previa" style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px' }} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="form-actions">
           <button
-            type="submit"
-            className="btn-primary"
+            type="button"
+            className="btn btn-secondary"
+            onClick={resetForm}
             disabled={loading}
           >
-            {loading ? 'Guardando...' : (initialData ? 'Actualizar Libro' : 'Crear Libro')}
+            Limpiar Formulario
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span className="spinner"></span>
+                Guardando...
+              </>
+            ) : (
+              initialData ? 'Actualizar Libro' : 'Crear Libro'
+            )}
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

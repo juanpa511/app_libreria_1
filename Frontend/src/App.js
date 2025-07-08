@@ -18,10 +18,12 @@ import MyFinesPage from './pages/MyFinesPage';
 import AdminBooksPage from './pages/Admin/AdminBooksPage';
 import AdminLoansPage from './pages/Admin/AdminLoansPage';
 import AdminFinesPage from './pages/Admin/AdminFinesPage';
+import AdminReturnsPage from './pages/Admin/AdminReturnsPage';
 import SearchReaderPage from './pages/SearchReaderPage';
 import CreateBookPage from './pages/CreateBookPage';
 import LoanPage from './pages/LoanPage';
 import ReturnPage from './pages/ReturnPage';
+import BooksPublicPage from './pages/BooksPublicPage';
 
 // Estilos
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -69,7 +71,7 @@ function App() {
             <Route 
               path="/admin/books" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute requiredRole={1}>
                   <AdminBooksPage />
                 </ProtectedRoute>
               } 
@@ -77,7 +79,7 @@ function App() {
             <Route 
               path="/admin/loans" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute requiredRole={1}>
                   <AdminLoansPage />
                 </ProtectedRoute>
               } 
@@ -85,7 +87,7 @@ function App() {
             <Route 
               path="/admin/fines" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute requiredRole={1}>
                   <AdminFinesPage />
                 </ProtectedRoute>
               } 
@@ -93,7 +95,7 @@ function App() {
             <Route 
               path="/admin/search-reader" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute requiredRole={1}>
                   <SearchReaderPage />
                 </ProtectedRoute>
               } 
@@ -101,7 +103,7 @@ function App() {
             <Route 
               path="/admin/create-book" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute requiredRole={1}>
                   <CreateBookPage />
                 </ProtectedRoute>
               } 
@@ -109,7 +111,7 @@ function App() {
             <Route 
               path="/admin/loan" 
               element={
-                <ProtectedRoute requireAdmin={true}>
+                <ProtectedRoute requiredRole={1}>
                   <LoanPage />
                 </ProtectedRoute>
               } 
@@ -117,11 +119,14 @@ function App() {
             <Route 
               path="/admin/return" 
               element={
-                <ProtectedRoute requireAdmin={true}>
-                  <ReturnPage />
+                <ProtectedRoute requiredRole={1}>
+                  <AdminReturnsPage />
                 </ProtectedRoute>
               } 
             />
+
+            {/* Rutas públicas */}
+            <Route path="/public-books" element={<BooksPublicPage />} />
 
             {/* Redirección por defecto */}
             <Route path="*" element={<Navigate to="/" replace />} />

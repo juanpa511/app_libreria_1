@@ -26,48 +26,27 @@ const FineCard = ({
     }).format(amount);
   };
 
-  const getStatusClass = (status) => {
-    switch (status) {
-      case 'PENDING': return 'status-pending';
-      case 'PAID': return 'status-paid';
-      case 'CANCELLED': return 'status-cancelled';
-      case 'OVERDUE': return 'status-overdue';
-      default: return 'status-default';
-    }
+  const getStatusClass = (state) => {
+    return state ? 'status-paid' : 'status-pending';
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'PENDING': return 'Pendiente';
-      case 'PAID': return 'Pagada';
-      case 'CANCELLED': return 'Cancelada';
-      case 'OVERDUE': return 'Vencida';
-      default: return status;
-    }
+  const getStatusText = (state) => {
+    return state ? 'Pagada' : 'Pendiente';
   };
 
-  const getDaysUntilDue = (dueDate) => {
-    if (!dueDate) return null;
-    const today = new Date();
-    const due = new Date(dueDate);
-    const diffTime = due - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const daysUntilDue = getDaysUntilDue(fine.dueDate);
-  const isOverdue = daysUntilDue < 0;
-  const isDueSoon = daysUntilDue <= 7 && daysUntilDue >= 0;
+  // Como el backend no tiene fecha de vencimiento, usamos la fecha actual
+  const isOverdue = false;
+  const isDueSoon = false;
 
   return (
     <div className={`fine-card ${getStatusClass(fine.status)}`}>
       <div className="fine-card-header">
         <div className="fine-id">
           <span className="label">Multa #:</span>
-          <span className="value">{fine.id}</span>
+          <span className="value">{fine.idFine}</span>
         </div>
-        <div className={`fine-status ${getStatusClass(fine.status)}`}>
-          {getStatusText(fine.status)}
+        <div className={`fine-status ${getStatusClass(fine.state)}`}>
+          {getStatusText(fine.state)}
         </div>
       </div>
 
@@ -79,50 +58,27 @@ const FineCard = ({
 
         <div className="fine-info">
           <div className="fine-reason">
-            <span className="label">Razón:</span>
-            <p className="reason-text">{fine.reason || 'Sin especificar'}</p>
+            <span className="label">Descripción:</span>
+            <p className="reason-text">{fine.description || 'Sin especificar'}</p>
           </div>
 
           {isAdmin && (
             <div className="reader-info">
               <p className="reader-name">
-                <span className="label">Lector:</span> {fine.readerName || 'N/A'}
+                <span className="label">Lector:</span> {fine.user?.name || 'N/A'}
               </p>
               <p className="reader-email">
-                <span className="label">Email:</span> {fine.readerEmail || 'N/A'}
+                <span className="label">Email:</span> {fine.user?.email || 'N/A'}
               </p>
             </div>
           )}
-
-          <div className="loan-info">
-            <p className="loan-id">
-              <span className="label">Préstamo:</span> #{fine.loanId}
-            </p>
-            {fine.bookTitle && (
-              <p className="book-title">
-                <span className="label">Libro:</span> {fine.bookTitle}
-              </p>
-            )}
-          </div>
         </div>
 
         <div className="fine-dates">
           <div className="creation-date">
-            <span className="label">Fecha Creación:</span>
-            <span className="value">{formatDate(fine.createdDate)}</span>
+            <span className="label">Estado:</span>
+            <span className="value">{fine.state ? 'Pagada' : 'Pendiente'}</span>
           </div>
-          <div className="due-date">
-            <span className="label">Fecha Vencimiento:</span>
-            <span className={`value ${isOverdue ? 'overdue' : isDueSoon ? 'due-soon' : ''}`}>
-              {formatDate(fine.dueDate)}
-            </span>
-          </div>
-          {fine.paidDate && (
-            <div className="paid-date">
-              <span className="label">Fecha Pago:</span>
-              <span className="value">{formatDate(fine.paidDate)}</span>
-            </div>
-          )}
         </div>
 
         {fine.status === 'PENDING' && (
@@ -149,11 +105,11 @@ const FineCard = ({
           Ver Detalles
         </button>
 
-        {fine.status === 'PENDING' && (
+        {!fine.state && (
           <>
             <button 
               className="btn btn-success"
-              onClick={() => onPayFine && onPayFine(fine.id)}
+              onClick={() => onPayFine && onPayFine(fine.idFine)}
             >
               Pagar Multa
             </button>
@@ -168,9 +124,9 @@ const FineCard = ({
                 </button>
                 <button 
                   className="btn btn-danger"
-                  onClick={() => onCancelFine && onCancelFine(fine.id)}
+                  onClick={() => onDeleteFine && onDeleteFine(fine.idFine)}
                 >
-                  Cancelar
+                  Eliminar
                 </button>
               </>
             )}
@@ -178,19 +134,7 @@ const FineCard = ({
         )}
       </div>
 
-      {fine.notes && (
-        <div className="fine-notes">
-          <span className="label">Notas:</span>
-          <p>{fine.notes}</p>
-        </div>
-      )}
 
-      {fine.paymentMethod && fine.status === 'PAID' && (
-        <div className="payment-info">
-          <span className="label">Método de Pago:</span>
-          <span className="value">{fine.paymentMethod}</span>
-        </div>
-      )}
     </div>
   );
 };

@@ -54,6 +54,7 @@ public class AuthService {
         user.setLastName(request.getLastName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setState(true); // Usuario activo por defecto
+        user.setUserVersion(System.currentTimeMillis()); // Versión inicial
 
         // Asignar rol LECTOR
         Set<Rol> roles = new HashSet<>();
@@ -71,10 +72,13 @@ public class AuthService {
         // Guardar usuario
         user = userRepository.save(user);
 
-        // Generar token JWT
-        String token = jwtProvider.generateToken(user.getEmail());
+        // Generar token JWT con versión de usuario
+        String token = jwtProvider.generateToken(user.getEmail(), user.getUserVersion());
 
-        return new AuthResponse(token, "Usuario registrado exitosamente", user.getEmail());
+        // Obtener el ID del primer rol (asumiendo que un usuario tiene al menos un rol)
+        Integer rolId = user.getRoles().iterator().next().getIdRol();
+
+        return new AuthResponse(token, "Usuario registrado exitosamente", user.getEmail(), rolId);
     }
 
     /**
@@ -89,12 +93,43 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
-            // Generar token JWT
-            String token = jwtProvider.generateToken(request.getEmail());
+            // Obtener el usuario para acceder a sus roles
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            return new AuthResponse(token, "Login exitoso", request.getEmail());
+            // Generar token JWT con versión de usuario
+            String token = jwtProvider.generateToken(request.getEmail(), user.getUserVersion());
+
+            // Obtener el ID del primer rol (asumiendo que un usuario tiene al menos un rol)
+            Integer rolId = user.getRoles().iterator().next().getIdRol();
+
+            return new AuthResponse(token, "Login exitoso", request.getEmail(), rolId);
         } catch (Exception e) {
             throw new RuntimeException("Credenciales inválidas");
         }
+    }
+
+    /**
+     * Refresca el token JWT de un usuario
+     * @param email el email del usuario
+     * @return respuesta con nuevo token JWT
+     */
+    public AuthResponse refreshToken(String email) {
+        // Obtener el usuario
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar que el usuario esté activo
+        if (!user.isState()) {
+            throw new RuntimeException("Usuario inactivo");
+        }
+
+        // Generar nuevo token JWT con versión actualizada
+        String token = jwtProvider.generateToken(email, user.getUserVersion());
+
+        // Obtener el ID del primer rol
+        Integer rolId = user.getRoles().iterator().next().getIdRol();
+
+        return new AuthResponse(token, "Token refrescado exitosamente", email, rolId);
     }
 } 

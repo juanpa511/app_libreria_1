@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { ROLE_NAMES } from '../../utils/constants';
 import Swal from 'sweetalert2';
 import '../../styles/Header.css'; 
 
@@ -65,6 +66,9 @@ const Header = () => {
       );
     }
 
+    const userRole = user?.roleId || user?.role || 2;
+    const roleName = ROLE_NAMES[userRole] || 'Usuario';
+
     return (
       <div className="header-user">
         <div className="user-info">
@@ -72,16 +76,16 @@ const Header = () => {
             Hola, {user?.name || user?.firstName || user?.email}
           </span>
           <span className="user-role">
-            {isAdmin() ? 'Administrador' : 'Lector'}
+            {roleName}
           </span>
         </div>
         <div className="user-actions">
-          <Link to="/navigation" className="btn btn-outline btn-sm" onClick={closeMenu}>
+          <Link to="/admin/books" className="btn btn-outline btn-xs" onClick={closeMenu}>
             Menú
           </Link>
           <button 
             onClick={handleLogout}
-            className="btn btn-error btn-sm"
+            className="btn btn-error btn-xs"
           >
             Cerrar Sesión
           </button>
@@ -94,53 +98,45 @@ const Header = () => {
     if (!isAuthenticated) {
       return (
         <nav className="main-nav">
-          <Link to="/" className="nav-link" onClick={closeMenu}>
-            Inicio
-          </Link>
-          <Link to="/about" className="nav-link" onClick={closeMenu}>
-            Acerca de
-          </Link>
+          <Link to="/" className="nav-link" onClick={closeMenu}>Inicio</Link>
+          <Link to="/about" className="nav-link" onClick={closeMenu}>Acerca de</Link>
         </nav>
       );
     }
 
+    // Enlaces principales para todos los autenticados
+    let links = [
+      <Link key="home" to="/" className="nav-link" onClick={closeMenu}>Inicio</Link>,
+      <Link key="books" to="/books" className="nav-link" onClick={closeMenu}>Libros</Link>
+    ];
+
+    // Enlaces adicionales según el rol
+    const userRole = user?.roleId || user?.role;
+    if (userRole === 2) {
+      links.push(
+        <Link key="my-loans" to="/my-loans" className="nav-link" onClick={closeMenu}>Mis Préstamos</Link>,
+        <Link key="my-fines" to="/my-fines" className="nav-link" onClick={closeMenu}>Mis Multas</Link>
+      );
+    }
+    if (userRole === 1) {
+      links.push(
+        <Link key="books-catalog" to="/admin/books-catalog" className="nav-link" onClick={closeMenu}>Catálogo de Libros</Link>,
+        <Link key="admin-books" to="/admin/books" className="nav-link" onClick={closeMenu}>Gestionar Libros</Link>,
+        <Link key="admin-loans" to="/admin/loans" className="nav-link" onClick={closeMenu}>Gestionar Préstamos</Link>,
+        <Link key="admin-fines" to="/admin/fines" className="nav-link" onClick={closeMenu}>Gestionar Multas</Link>,
+        <Link key="admin-returns" to="/admin/return" className="nav-link" onClick={closeMenu}>Devoluciones</Link>,
+        <Link key="search-reader" to="/admin/search-reader" className="nav-link" onClick={closeMenu}>Buscar Lector</Link>
+      );
+    }
+
+    // Siempre muestra 'Acerca de'
+    links.push(
+      <Link key="about" to="/about" className="nav-link" onClick={closeMenu}>Acerca de</Link>
+    );
+
     return (
       <nav className="main-nav">
-        <Link to="/" className="nav-link" onClick={closeMenu}>
-          Inicio
-        </Link>
-        <Link to="/books" className="nav-link" onClick={closeMenu}>
-          Libros
-        </Link>
-        {isReader() && (
-          <>
-            <Link to="/my-loans" className="nav-link" onClick={closeMenu}>
-              Mis Préstamos
-            </Link>
-            <Link to="/my-fines" className="nav-link" onClick={closeMenu}>
-              Mis Multas
-            </Link>
-          </>
-        )}
-        {isAdmin() && (
-          <>
-            <Link to="/create-book" className="nav-link" onClick={closeMenu}>
-              Crear Libro
-            </Link>
-            <Link to="/loans" className="nav-link" onClick={closeMenu}>
-              Préstamos
-            </Link>
-            <Link to="/returns" className="nav-link" onClick={closeMenu}>
-              Devoluciones
-            </Link>
-            <Link to="/search-reader" className="nav-link" onClick={closeMenu}>
-              Buscar Lector
-            </Link>
-          </>
-        )}
-        <Link to="/about" className="nav-link" onClick={closeMenu}>
-          Acerca de
-        </Link>
+        {links}
       </nav>
     );
   };
@@ -152,7 +148,7 @@ const Header = () => {
           {/* Logo */}
           <div className="header-logo">
             <Link to="/" className="logo-link" onClick={closeMenu}>
-              <h1 className="logo-text">📚 Library</h1>
+              <h1 className="logo-text">📚 JJ Library</h1>
             </Link>
           </div>
 

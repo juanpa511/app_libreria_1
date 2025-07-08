@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import '../../styles/BookFilter.css';
 
-const BookFilter = ({ onFilterChange, onSearchChange, filters: initialFilters = {} }) => {
+const BookFilter = ({ onFilterChange, filters: initialFilters = {} }) => {
   const [filters, setFilters] = useState({
     type: initialFilters.type || '',
-    status: initialFilters.status || '',
-    genre: initialFilters.genre || '',
-    year: initialFilters.year || ''
+    availability: initialFilters.availability || '',
+    searchTerm: initialFilters.searchTerm || ''
   });
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -22,65 +21,43 @@ const BookFilter = ({ onFilterChange, onSearchChange, filters: initialFilters = 
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    onSearchChange(value);
+    const newFilters = {
+      ...filters,
+      searchTerm: value
+    };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   const clearFilters = () => {
     const emptyFilters = {
       type: '',
-      status: '',
-      genre: '',
-      year: ''
+      availability: '',
+      searchTerm: ''
     };
     setFilters(emptyFilters);
     setSearchTerm('');
     onFilterChange(emptyFilters);
-    onSearchChange('');
   };
 
+  // Tipos de libros según los requerimientos del proyecto
   const bookTypes = [
     { value: '', label: 'Todos los tipos' },
-    { value: 'ficcion', label: 'Ficción' },
-    { value: 'no ficcion', label: 'No Ficción' },
+    { value: 'educacion', label: 'Educación' },
+    { value: 'novela', label: 'Novela' },
+    { value: 'aventura', label: 'Aventura' },
+    { value: 'poemas', label: 'Poemas' },
     { value: 'ciencia', label: 'Ciencia' },
     { value: 'historia', label: 'Historia' },
     { value: 'arte', label: 'Arte' },
-    { value: 'tecnologia', label: 'Tecnología' },
-    { value: 'literatura', label: 'Literatura' }
+    { value: 'tecnologia', label: 'Tecnología' }
   ];
 
-  const bookStatuses = [
+  // Estados de disponibilidad
+  const availabilityOptions = [
     { value: '', label: 'Todos los estados' },
-    { value: 'disponible', label: 'Disponible' },
-    { value: 'prestado', label: 'Prestado' },
-    { value: 'reservado', label: 'Reservado' }
-  ];
-
-  const genres = [
-    { value: '', label: 'Todos los géneros' },
-    { value: 'novela', label: 'Novela' },
-    { value: 'ensayo', label: 'Ensayo' },
-    { value: 'biografia', label: 'Biografía' },
-    { value: 'ciencia_ficcion', label: 'Ciencia Ficción' },
-    { value: 'fantasia', label: 'Fantasía' },
-    { value: 'misterio', label: 'Misterio' },
-    { value: 'romance', label: 'Romance' },
-    { value: 'terror', label: 'Terror' },
-    { value: 'aventura', label: 'Aventura' }
-  ];
-
-  const years = [
-    { value: '', label: 'Todos los años' },
-    { value: '2024', label: '2024' },
-    { value: '2023', label: '2023' },
-    { value: '2022', label: '2022' },
-    { value: '2021', label: '2021' },
-    { value: '2020', label: '2020' },
-    { value: '2019', label: '2019' },
-    { value: '2018', label: '2018' },
-    { value: '2017', label: '2017' },
-    { value: '2016', label: '2016' },
-    { value: '2015', label: '2015' }
+    { value: 'available', label: 'Disponible' },
+    { value: 'borrowed', label: 'En préstamo' }
   ];
 
   return (
@@ -115,42 +92,14 @@ const BookFilter = ({ onFilterChange, onSearchChange, filters: initialFilters = 
           </div>
 
           <div className="filter-group">
-            <label>Estado</label>
+            <label>Disponibilidad</label>
             <select 
-              value={filters.status} 
-              onChange={(e) => handleFilterChange('status', e.target.value)}
+              value={filters.availability} 
+              onChange={(e) => handleFilterChange('availability', e.target.value)}
             >
-              {bookStatuses.map(status => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Género</label>
-            <select 
-              value={filters.genre} 
-              onChange={(e) => handleFilterChange('genre', e.target.value)}
-            >
-              {genres.map(genre => (
-                <option key={genre.value} value={genre.value}>
-                  {genre.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Año</label>
-            <select 
-              value={filters.year} 
-              onChange={(e) => handleFilterChange('year', e.target.value)}
-            >
-              {years.map(year => (
-                <option key={year.value} value={year.value}>
-                  {year.label}
+              {availabilityOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>

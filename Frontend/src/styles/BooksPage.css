@@ -9,6 +9,61 @@
   margin-bottom: 2rem;
 }
 
+.books-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.books-header-info {
+  text-align: left;
+  flex: 1;
+}
+
+.books-header-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.books-header-actions .btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.books-header-actions .btn-primary {
+  background-color: #667eea;
+  color: white;
+}
+
+.books-header-actions .btn-primary:hover {
+  background-color: #5a6fd8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.books-header-actions .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.books-header-actions .btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
 .books-header h1 {
   color: #2c3e50;
   font-size: 2.5rem;
@@ -333,39 +388,49 @@
   .books-page {
     padding: 1rem;
   }
-  
+
+  .books-header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .books-header-info {
+    text-align: center;
+  }
+
+  .books-header-actions {
+    justify-content: center;
+  }
+
   .books-header h1 {
     font-size: 2rem;
   }
-  
+
   .books-controls {
     padding: 1rem;
   }
-  
+
   .search-section {
     flex-direction: column;
-    align-items: stretch;
   }
-  
+
   .search-input {
     min-width: auto;
   }
-  
+
   .filter-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
+    justify-content: center;
   }
-  
+
   .books-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1rem;
   }
-  
+
   .book-content {
     padding: 1rem;
   }
-  
+
   .book-actions {
     flex-direction: column;
   }

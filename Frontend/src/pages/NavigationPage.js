@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { ROLE_NAMES } from '../utils/constants';
+import Layout from '../components/common/Layout';
 import '../styles/NavigationPage.css'; 
 
 const NavigationPage = () => {
@@ -87,92 +89,94 @@ const NavigationPage = () => {
   };
 
   return (
-    <div className="navigation-page">
-      <div className="navigation-container">
-        <div className="navigation-header">
-          <div className="user-welcome">
-            <div className="user-avatar">
-              {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
+    <Layout>
+      <div className="navigation-page">
+        <div className="navigation-container">
+          <div className="navigation-header">
+            <div className="user-welcome">
+              <div className="user-avatar">
+                {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
+              </div>
+              <div className="user-info">
+                <h1>Bienvenido, {user?.name || user?.email}</h1>
+                <p className="user-role">
+                  {ROLE_NAMES[user?.roleId || user?.role || 2]}
+                </p>
+              </div>
             </div>
-            <div className="user-info">
-              <h1>Bienvenido, {user?.name || user?.email}</h1>
-              <p className="user-role">
-                {user?.role === 'admin' ? 'Administrador' : 'Lector'}
-              </p>
-            </div>
-          </div>
-          <button onClick={handleLogout} className="logout-btn">
-            Cerrar Sesión
-          </button>
-        </div>
-
-        <div className="navigation-content">
-          <div className="options-section">
-            <h2>Opciones Disponibles</h2>
-            <div className="options-grid">
-              {user?.role === 'admin' 
-                ? adminOptions.map((option, index) => (
-                    <Link 
-                      key={index} 
-                      to={option.path} 
-                      className={`option-card ${option.color}`}
-                    >
-                      <div className="option-icon">{option.icon}</div>
-                      <h3>{option.title}</h3>
-                      <p>{option.description}</p>
-                    </Link>
-                  ))
-                : readerOptions.map((option, index) => (
-                    <Link 
-                      key={index} 
-                      to={option.path} 
-                      className={`option-card ${option.color}`}
-                    >
-                      <div className="option-icon">{option.icon}</div>
-                      <h3>{option.title}</h3>
-                      <p>{option.description}</p>
-                    </Link>
-                  ))
-              }
-            </div>
+            <button onClick={handleLogout} className="logout-btn">
+              Cerrar Sesión
+            </button>
           </div>
 
-          <div className="quick-stats">
-            <h2>Estadísticas Rápidas</h2>
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-icon">📚</div>
-                <div className="stat-info">
-                  <h3>Libros</h3>
-                  <p>Total en catálogo</p>
-                </div>
+          <div className="navigation-content">
+            <div className="options-section">
+              <h2>Opciones Disponibles</h2>
+              <div className="options-grid">
+                {(user?.roleId || user?.role) === 1
+                  ? adminOptions.map((option, index) => (
+                      <Link 
+                        key={index} 
+                        to={option.path} 
+                        className={`option-card ${option.color}`}
+                      >
+                        <div className="option-icon">{option.icon}</div>
+                        <h3>{option.title}</h3>
+                        <p>{option.description}</p>
+                      </Link>
+                    ))
+                  : readerOptions.map((option, index) => (
+                      <Link 
+                        key={index} 
+                        to={option.path} 
+                        className={`option-card ${option.color}`}
+                      >
+                        <div className="option-icon">{option.icon}</div>
+                        <h3>{option.title}</h3>
+                        <p>{option.description}</p>
+                      </Link>
+                    ))
+                }
               </div>
-              <div className="stat-card">
-                <div className="stat-icon">👥</div>
-                <div className="stat-info">
-                  <h3>Lectores</h3>
-                  <p>Usuarios registrados</p>
+            </div>
+
+            <div className="quick-stats">
+              <h2>Estadísticas Rápidas</h2>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon">📚</div>
+                  <div className="stat-info">
+                    <h3>Libros</h3>
+                    <p>Total en catálogo</p>
+                  </div>
                 </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">📋</div>
-                <div className="stat-info">
-                  <h3>Préstamos</h3>
-                  <p>Activos hoy</p>
+                <div className="stat-card">
+                  <div className="stat-icon">👥</div>
+                  <div className="stat-info">
+                    <h3>Lectores</h3>
+                    <p>Usuarios registrados</p>
+                  </div>
                 </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">⚠️</div>
-                <div className="stat-info">
-                  <h3>Multas</h3>
-                  <p>Pendientes</p>
+                <div className="stat-card">
+                  <div className="stat-icon">📋</div>
+                  <div className="stat-info">
+                    <h3>Préstamos</h3>
+                    <p>Activos hoy</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">⚠️</div>
+                  <div className="stat-info">
+                    <h3>Multas</h3>
+                    <p>Pendientes</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

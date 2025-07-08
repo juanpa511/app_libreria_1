@@ -4,6 +4,7 @@ import readerService from '../services/readerService';
 import bookService from '../services/bookService';
 import LoanCard from '../components/Loans/LoanCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import Layout from '../components/common/Layout';
 import '../styles/LoanPage.css';
 
 const LoanPage = () => {
@@ -124,177 +125,183 @@ const LoanPage = () => {
     return date.toISOString().split('T')[0];
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return (
+    <Layout>
+      <LoadingSpinner />
+    </Layout>
+  );
 
   return (
-    <div className="loan-page">
-      <div className="container">
-        <div className="page-header">
-          <h1>Gestión de Préstamos</h1>
-          <button 
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="create-btn"
-          >
-            {showCreateForm ? 'Cancelar' : '+ Nuevo Préstamo'}
-          </button>
-        </div>
-
-        {error && (
-          <div className="error-message">
-            <p>Error: {error}</p>
-            <button onClick={fetchLoans} className="retry-btn">
-              Reintentar
+    <Layout>
+      <div className="loan-page">
+        <div className="container">
+          <div className="page-header">
+            <h1>Gestión de Préstamos</h1>
+            <button 
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="create-btn"
+            >
+              {showCreateForm ? 'Cancelar' : '+ Nuevo Préstamo'}
             </button>
           </div>
-        )}
 
-        {showCreateForm && (
-          <div className="create-loan-form">
-            <h3>Crear Nuevo Préstamo</h3>
-            <form onSubmit={handleCreateLoan}>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="readerId">Lector *</label>
-                  <select
-                    id="readerId"
-                    value={newLoan.readerId}
-                    onChange={(e) => setNewLoan({...newLoan, readerId: e.target.value})}
-                    required
-                  >
-                    <option value="">Seleccione un lector</option>
-                    {readers.map(reader => (
-                      <option key={reader.id} value={reader.id}>
-                        {reader.name} - {reader.email}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="bookId">Libro *</label>
-                  <select
-                    id="bookId"
-                    value={newLoan.bookId}
-                    onChange={(e) => setNewLoan({...newLoan, bookId: e.target.value})}
-                    required
-                  >
-                    <option value="">Seleccione un libro</option>
-                    {books.map(book => (
-                      <option key={book.id} value={book.id}>
-                        {book.title} - {book.author} (Stock: {book.stock})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="loanDate">Fecha del Préstamo *</label>
-                  <input
-                    type="date"
-                    id="loanDate"
-                    value={newLoan.loanDate}
-                    onChange={(e) => setNewLoan({...newLoan, loanDate: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="dueDate">Fecha de Vencimiento *</label>
-                  <input
-                    type="date"
-                    id="dueDate"
-                    value={newLoan.dueDate || getDefaultDueDate()}
-                    onChange={(e) => setNewLoan({...newLoan, dueDate: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div className="form-group full-width">
-                  <label htmlFor="notes">Notas</label>
-                  <textarea
-                    id="notes"
-                    value={newLoan.notes}
-                    onChange={(e) => setNewLoan({...newLoan, notes: e.target.value})}
-                    rows="3"
-                    placeholder="Notas adicionales..."
-                  />
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button type="submit" className="submit-btn">
-                  Crear Préstamo
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        <div className="loans-controls">
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Buscar por lector, libro o email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <div className="filters">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="all">Todos los préstamos</option>
-              <option value="active">Préstamos activos</option>
-              <option value="returned">Préstamos devueltos</option>
-              <option value="overdue">Préstamos vencidos</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="loans-stats">
-          <div className="stat-card">
-            <span className="stat-number">{loans.length}</span>
-            <span className="stat-label">Total</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-number">{loans.filter(l => !l.returnDate).length}</span>
-            <span className="stat-label">Activos</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-number">{loans.filter(l => l.returnDate).length}</span>
-            <span className="stat-label">Devueltos</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-number">
-              {loans.filter(l => !l.returnDate && new Date(l.dueDate) < new Date()).length}
-            </span>
-            <span className="stat-label">Vencidos</span>
-          </div>
-        </div>
-
-        <div className="loans-list">
-          {filteredLoans.length === 0 ? (
-            <div className="no-loans">
-              <div className="no-loans-icon">📋</div>
-              <h3>No hay préstamos que mostrar</h3>
-              <p>No se encontraron préstamos con los filtros seleccionados</p>
+          {error && (
+            <div className="error-message">
+              <p>Error: {error}</p>
+              <button onClick={fetchLoans} className="retry-btn">
+                Reintentar
+              </button>
             </div>
-          ) : (
-            filteredLoans.map(loan => (
-              <LoanCard
-                key={loan.id}
-                loan={loan}
-                onReturn={handleReturnBook}
-                onRenew={handleRenewLoan}
-                showActions={true}
-              />
-            ))
           )}
+
+          {showCreateForm && (
+            <div className="create-loan-form">
+              <h3>Crear Nuevo Préstamo</h3>
+              <form onSubmit={handleCreateLoan}>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="readerId">Lector *</label>
+                    <select
+                      id="readerId"
+                      value={newLoan.readerId}
+                      onChange={(e) => setNewLoan({...newLoan, readerId: e.target.value})}
+                      required
+                    >
+                      <option value="">Seleccione un lector</option>
+                      {readers.map(reader => (
+                        <option key={reader.id} value={reader.id}>
+                          {reader.name} - {reader.email}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="bookId">Libro *</label>
+                    <select
+                      id="bookId"
+                      value={newLoan.bookId}
+                      onChange={(e) => setNewLoan({...newLoan, bookId: e.target.value})}
+                      required
+                    >
+                      <option value="">Seleccione un libro</option>
+                      {books.map(book => (
+                        <option key={book.id} value={book.id}>
+                          {book.title} - {book.author} (Stock: {book.stock})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="loanDate">Fecha del Préstamo *</label>
+                    <input
+                      type="date"
+                      id="loanDate"
+                      value={newLoan.loanDate}
+                      onChange={(e) => setNewLoan({...newLoan, loanDate: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="dueDate">Fecha de Vencimiento *</label>
+                    <input
+                      type="date"
+                      id="dueDate"
+                      value={newLoan.dueDate || getDefaultDueDate()}
+                      onChange={(e) => setNewLoan({...newLoan, dueDate: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label htmlFor="notes">Notas</label>
+                    <textarea
+                      id="notes"
+                      value={newLoan.notes}
+                      onChange={(e) => setNewLoan({...newLoan, notes: e.target.value})}
+                      rows="3"
+                      placeholder="Notas adicionales..."
+                    />
+                  </div>
+                </div>
+
+                <div className="form-actions">
+                  <button type="submit" className="submit-btn">
+                    Crear Préstamo
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          <div className="loans-controls">
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Buscar por lector, libro o email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div className="filters">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="all">Todos los préstamos</option>
+                <option value="active">Préstamos activos</option>
+                <option value="returned">Préstamos devueltos</option>
+                <option value="overdue">Préstamos vencidos</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="loans-stats">
+            <div className="stat-card">
+              <span className="stat-number">{loans.length}</span>
+              <span className="stat-label">Total</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-number">{loans.filter(l => !l.returnDate).length}</span>
+              <span className="stat-label">Activos</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-number">{loans.filter(l => l.returnDate).length}</span>
+              <span className="stat-label">Devueltos</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-number">
+                {loans.filter(l => !l.returnDate && new Date(l.dueDate) < new Date()).length}
+              </span>
+              <span className="stat-label">Vencidos</span>
+            </div>
+          </div>
+
+          <div className="loans-list">
+            {filteredLoans.length === 0 ? (
+              <div className="no-loans">
+                <div className="no-loans-icon">📋</div>
+                <h3>No hay préstamos que mostrar</h3>
+                <p>No se encontraron préstamos con los filtros seleccionados</p>
+              </div>
+            ) : (
+              filteredLoans.map(loan => (
+                <LoanCard
+                  key={loan.id}
+                  loan={loan}
+                  onReturn={handleReturnBook}
+                  onRenew={handleRenewLoan}
+                  showActions={true}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

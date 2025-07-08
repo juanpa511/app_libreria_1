@@ -1,112 +1,10 @@
-import React, { createContext, useContext, useReducer, useEffect,   } from 'react';
-import { authService } from '../services/authService';
+// src/contexts/AuthContext.js
 
-const MOCK_USERS = {
-  'admin@test.com': {
-    id: 1,
-    email: 'admin@test.com',
-    name: 'Administrador',
-    role: 'admin',
-    password: 'admin123'
-  },
-  'user@test.com': {
-    id: 2,
-    email: 'user@test.com',
-    name: 'Usuario Regular',
-    role: 'reader',
-    password: 'user123'
-  }
-};
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { loginUser, registerUser, logout, isAuthenticated, getUserRole, getUserEmail } from '../services/apiService';
 
-// Estado inicial
-const initialState = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  loading: true,
-  error: null
-};
-
-// Tipos de acciones
-const AUTH_ACTIONS = {
-  LOGIN_START: 'LOGIN_START',
-  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
-  LOGIN_ERROR: 'LOGIN_ERROR',
-  LOGOUT: 'LOGOUT',
-  REGISTER_START: 'REGISTER_START',
-  REGISTER_SUCCESS: 'REGISTER_SUCCESS',
-  REGISTER_ERROR: 'REGISTER_ERROR',
-  LOAD_USER: 'LOAD_USER',
-  CLEAR_ERROR: 'CLEAR_ERROR'
-};
-
-// Reducer
-const authReducer = (state, action) => {
-  switch (action.type) {
-    case AUTH_ACTIONS.LOGIN_START:
-    case AUTH_ACTIONS.REGISTER_START:
-      return {
-        ...state,
-        loading: true,
-        error: null
-      };
-    
-    case AUTH_ACTIONS.LOGIN_SUCCESS:
-    case AUTH_ACTIONS.REGISTER_SUCCESS:
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        loading: false,
-        error: null
-      };
-    
-    case AUTH_ACTIONS.LOGIN_ERROR:
-    case AUTH_ACTIONS.REGISTER_ERROR:
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        loading: false,
-        error: action.payload
-      };
-    
-    case AUTH_ACTIONS.LOGOUT:
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        loading: false,
-        error: null
-      };
-    
-    case AUTH_ACTIONS.LOAD_USER:
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        loading: false
-      };
-    
-    case AUTH_ACTIONS.CLEAR_ERROR:
-      return {
-        ...state,
-        error: null
-      };
-    
-    default:
-      return state;
-  }
-};
-
-// Crear contexto
 const AuthContext = createContext();
 
-// Hook personalizado para usar el contexto
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -115,179 +13,101 @@ export const useAuth = () => {
   return context;
 };
 
-// Provider
 export const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Cargar usuario al iniciar la aplicación
+  // Verificar si el usuario está autenticado al cargar la aplicación
   useEffect(() => {
-    const loadUser = async () => {
+    const checkAuth = () => {
       try {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
-        
-        if (token && userData) {
-          const user = JSON.parse(userData);
-          dispatch({
-            type: AUTH_ACTIONS.LOAD_USER,
-            payload: { user, token }
+        if (isAuthenticated()) {
+          const userRole = getUserRole();
+          const userEmail = getUserEmail();
+          
+          setUser({
+            email: userEmail,
+            role: userRole,
+            roleId: parseInt(userRole) || 2 // Valor por defecto: 2 (Lector)
           });
-        } else {
-          dispatch({ type: AUTH_ACTIONS.LOGOUT });
         }
       } catch (error) {
-        console.error('Error al cargar usuario:', error);
-        dispatch({ type: AUTH_ACTIONS.LOGOUT });
+        console.error('Error verificando autenticación:', error);
+        logout();
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadUser();
+    checkAuth();
   }, []);
 
-  // Función de login
+  // Función para login
   const login = async (email, password) => {
     try {
-      dispatch({ type: AUTH_ACTIONS.LOGIN_START });
-
-         // Simular delay de red
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setError(null);
+      setLoading(true);
       
-      // Verificar credenciales con usuarios simulados
-      const mockUser = MOCK_USERS[email];
-      if (!mockUser || mockUser.password !== password) {
-        throw new Error('Credenciales inválidas');
-      }
+      const credentials = { email, password };
+      const response = await loginUser(credentials);
       
-      // Crear datos del usuario (sin password)
-      const user = {
-        id: mockUser.id,
-        email: mockUser.email,
-        name: mockUser.name,
-        role: mockUser.role
+      const userData = {
+        email: response.email || email,
+        role: response.rolId || 2, // El backend envía rolId, no role
+        roleId: parseInt(response.rolId) || 2
       };
       
-      // Generar token simulado
-      const token = `fake-jwt-token-${user.id}-${Date.now()}`;
-      
-      
-      //const response = await authService.login(email, password);
-      //const { user, token } = response.data;
-      
-      // Guardar en localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { user, token }
-      });
-      
-      return { success: true };
+      setUser(userData);
+      return { success: true, user: userData };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error al iniciar sesión';
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_ERROR,
-        payload: errorMessage
-      });
-      return { success: false, error: errorMessage };
+      setError(error.message);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Función de registro
+  // Función para registro
   const register = async (userData) => {
     try {
-      dispatch({ type: AUTH_ACTIONS.REGISTER_START });
+      setError(null);
+      setLoading(true);
       
-      // Simular delay de red
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await registerUser(userData);
       
-      // Verificar si el email ya existe
-      if (MOCK_USERS[userData.email]) {
-        throw new Error('El email ya está registrado');
-      }
-      
-      // Crear nuevo usuario
-      const user = {
-        id: Date.now(),
-        email: userData.email,
-        name: userData.name || 'Usuario',
-        role: 'reader' // Por defecto, nuevos usuarios son readers
-      };
-      
-      // Generar token simulado
-      const token = `fake-jwt-token-${user.id}-${Date.now()}`;
-      
-
-      //const response = await authService.register(userData);
-      //const { user, token } = response.data;
-      
-      // Guardar en localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      dispatch({
-        type: AUTH_ACTIONS.REGISTER_SUCCESS,
-        payload: { user, token }
-      });
-      
-      return { success: true };
+      return { success: true, data: response };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error al registrarse';
-      dispatch({
-        type: AUTH_ACTIONS.REGISTER_ERROR,
-        payload: errorMessage
-      });
-      return { success: false, error: errorMessage };
+      setError(error.message);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Función de logout
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    dispatch({ type: AUTH_ACTIONS.LOGOUT });
+  // Función para logout
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+    setError(null);
   };
 
   // Función para limpiar errores
   const clearError = () => {
-    dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-  };
-
-  // Función para verificar si el usuario tiene un rol específico
-  const hasRole = (role) => {
-    return state.user?.role === role;
-  };
-
-  // Función para verificar si el usuario es administrador
-  const isAdmin = () => {
-    return hasRole('admin');
-  };
-
-  // Función para verificar si el usuario es lector
-  const isReader = () => {
-    return hasRole('reader');
-  };
-
-    // Función para obtener información de usuarios disponibles (solo para desarrollo)
-  const getAvailableUsers = () => {
-    return Object.keys(MOCK_USERS).map(email => ({
-      email,
-      name: MOCK_USERS[email].name,
-      role: MOCK_USERS[email].role,
-      password: MOCK_USERS[email].password
-    }));
+    setError(null);
   };
 
   const value = {
-    ...state,
+    user,
+    loading,
+    error,
     login,
     register,
-    logout,
+    logout: handleLogout,
     clearError,
-    hasRole,
-    isAdmin,
-    isReader,
-    getAvailableUsers
+    isAuthenticated: !!user,
+    isAdmin: user?.roleId === 1,
+    isReader: user?.roleId === 2
   };
 
   return (
@@ -297,5 +117,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Exportar también el contexto para casos específicos
-export { AuthContext };
+export default AuthContext;

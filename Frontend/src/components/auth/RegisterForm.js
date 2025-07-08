@@ -1,13 +1,14 @@
+// src/components/auth/RegisterForm.js
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/RegisterPage.css'; 
-
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
     name: '',
-    LastName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -16,6 +17,8 @@ const RegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -40,6 +43,12 @@ const RegisterForm = () => {
       newErrors.name = 'El nombre es requerido';
     } else if (formData.name.length < 2) {
       newErrors.name = 'El nombre debe tener al menos 2 caracteres';
+    }
+    
+    if (!formData.lastName) {
+      newErrors.lastName = 'El apellido es requerido';
+    } else if (formData.lastName.length < 2) {
+      newErrors.lastName = 'El apellido debe tener al menos 2 caracteres';
     }
     
     if (!formData.email) {
@@ -75,15 +84,21 @@ const RegisterForm = () => {
     try {
       const userData = {
         name: formData.name,
+        lastName: formData.lastName,
         email: formData.email,
-        password: formData.password,
-        phone: formData.phone,
-        address: formData.address
+        password: formData.password
       };
 
-      await authService.register(userData);
-      alert('Registro exitoso! Ahora puedes iniciar sesión.');
-      navigate('/login');
+      const result = await register(userData);
+      
+      if (result.success) {
+        alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
+        navigate('/login');
+      } else {
+        setErrors({ 
+          submit: result.error || 'Error al registrar usuario' 
+        });
+      }
     } catch (error) {
       setErrors({ 
         submit: error.message || 'Error al registrar usuario' 
@@ -96,35 +111,40 @@ const RegisterForm = () => {
   return (
     <div className="register-form-container">
       <div className="register-form-card">
+        
+
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Nombre</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={errors.name ? 'error' : ''}
-              placeholder="Ingresa tu nombre completo"
-            />
-            {errors.name && <span className="error-message">{errors.name}</span>}
-          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="name">Nombre</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className={errors.name ? 'error' : ''}
+                placeholder="Ingresa tu nombre"
+                autoComplete="given-name"
+              />
+              {errors.name && <span className="error-message">{errors.name}</span>}
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="name">Apellido</label>
-            <input
-              type="text"
-              id="LastName"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={errors.name ? 'error' : ''}
-              placeholder="Ingresa tu nombre completo"
-            />
-            {errors.name && <span className="error-message">{errors.name}</span>}
+            <div className="form-group">
+              <label htmlFor="lastName">Apellido</label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                className={errors.lastName ? 'error' : ''}
+                placeholder="Ingresa tu apellido"
+                autoComplete="family-name"
+              />
+              {errors.lastName && <span className="error-message">{errors.lastName}</span>}
+            </div>
           </div>
-
 
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -136,11 +156,12 @@ const RegisterForm = () => {
               onChange={handleChange}
               className={errors.email ? 'error' : ''}
               placeholder="Ingresa tu email"
+              autoComplete="email"
             />
             {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
 
-         <div className="form-group">
+          <div className="form-group">
             <label htmlFor="password">Contraseña</label>
             <div className="input-with-icon">
               <input
@@ -151,11 +172,13 @@ const RegisterForm = () => {
                 onChange={handleChange}
                 className={errors.password ? 'error' : ''}
                 placeholder="Ingresa tu contraseña"
+                autoComplete="new-password"
               />
               <span
                 className="eye-icon"
                 onClick={() => setShowPassword(!showPassword)}
                 role="button"
+                tabIndex={0}
               >
                 {showPassword ? '🙈' : '👁️'}
               </span>
@@ -174,11 +197,13 @@ const RegisterForm = () => {
                 onChange={handleChange}
                 className={errors.confirmPassword ? 'error' : ''}
                 placeholder="Confirma tu contraseña"
+                autoComplete="new-password"
               />
               <span
                 className="eye-icon"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 role="button"
+                tabIndex={0}
               >
                 {showConfirmPassword ? '🙈' : '👁️'}
               </span>
@@ -199,8 +224,7 @@ const RegisterForm = () => {
           </button>
         </form>
 
-        <div className="register-footer">
-        </div>
+      
       </div>
     </div>
   );
