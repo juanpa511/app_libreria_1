@@ -7,8 +7,8 @@ Library App es una aplicación web moderna desarrollada con React.js que permite
 ## ✨ Características Principales
 
 ### 👥 Para Lectores
-- ✅ Explorar catálogo de libros con filtros avanzados
-- ✅ Visualizar préstamos activos y historial
+- ✅ Explorar catálogo de libros con filtros 
+- ✅ Visualizar préstamos activos
 - ✅ Consultar multas pendientes y estado de cuenta
 - ✅ Sistema de autenticación seguro con JWT
 - ✅ Interfaz responsive y moderna
@@ -160,9 +160,6 @@ La aplicación estará disponible en `http://localhost:3000`
 ## 🔧 Scripts Disponibles
 
 - `npm start` - Inicia la aplicación en modo desarrollo
-- `npm build` - Construye la aplicación para producción
-- `npm test` - Ejecuta las pruebas unitarias
-- `npm run eject` - Expone la configuración de Create React App
 
 ## 📋 Funcionalidades Implementadas
 
@@ -176,8 +173,7 @@ La aplicación estará disponible en `http://localhost:3000`
 
 ### 📚 Gestión de Libros
 - Listar libros con filtros avanzados
-- Crear nuevos libros (Admin)
-- Editar libros existentes (Admin)
+- Agregar nuevos libros (Admin)
 - Eliminar libros (Admin)
 - Vista pública de catálogo
 - Gestión de copias de libros
@@ -186,16 +182,12 @@ La aplicación estará disponible en `http://localhost:3000`
 - Crear préstamos (Admin)
 - Listar préstamos por usuario
 - Gestionar devoluciones (Admin)
-- Historial completo de préstamos
 - Modal para creación rápida de préstamos
-- Estadísticas de devoluciones
 
 ### 💰 Gestión de Multas
 - Visualizar multas del usuario
 - Gestión completa de multas (Admin)
-- Cálculo automático de multas
 - Estado de cuenta del lector
-- Historial de multas
 
 ### 👨‍💼 Administración
 - Panel administrativo completo
