@@ -238,24 +238,12 @@ Este proyecto corresponde a la **Evaluación 3 (40%)** de la asignatura **Electi
 - ✅ **Navegación** - React Router con rutas protegidas
 - ✅ **Responsive Design** - Adaptable a diferentes dispositivos
 
-## 🤝 Contribución
-
-Para contribuir al proyecto:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## 👨‍💻 Autor
 
-Desarrollado como parte del proyecto académico de **Ingeniería en Computación e Informática**.
+Desarrollado Por Juan Maldonado (Desarrollador Frontend) y Juan Meza (Desarrollador Backend)
 
----
+Video:
+Ejecucion de pruebas en el video adjunto en esta carpera llamada Front
 
-**Library App** - Transformando la gestión de bibliotecas en la era digital 📚✨
+
