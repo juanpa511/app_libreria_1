@@ -150,13 +150,9 @@ app_libreria/
 **Backend** (`application.properties`):
 ```properties
 # Configuración de la base de datos
-spring.datasource.url=jdbc:mysql://localhost:3306/biblioteca
+spring.datasource.url=jdbc:mysql://localhost:3306/biblioteca?useSSL=false&serverTimezone=UTC
 spring.datasource.username=root
 spring.datasource.password=root
-
-# Configuración JWT
-jwt.secret=tu_clave_secreta_jwt
-jwt.expiration=86400000
 ```
 
 ### Scripts Útiles
@@ -178,11 +174,6 @@ mvn clean install
 # Ejecutar en modo desarrollo
 npm start
 
-# Construir para producción
-npm run build
-
-# Ejecutar tests
-npm test
 ```
 
 ## 📊 Características Técnicas
@@ -216,6 +207,8 @@ npm test
 
 - **Juan Maldonado** - Desarrollador Frontend
 - **Juan Meza** - Desarrollador Backend
+
+Video: Ejecucion de pruebas en el video adjunto en esta carpera llamada Front
 
 
 
