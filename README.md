@@ -79,12 +79,6 @@ Un sistema completo de gestión de biblioteca desarrollado con tecnologías mode
 - **MySQL 8.0** o superior
 - **Maven 3.6** o superior
 
-### Configuración de la Base de Datos
-
-1. **Crear la base de datos MySQL:**
-```sql
-CREATE DATABASE biblioteca;
-```
 ### Instalación del Backend
 
 1. **Navegar al directorio del backend:**
