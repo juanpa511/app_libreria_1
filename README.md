@@ -85,13 +85,6 @@ Un sistema completo de gestión de biblioteca desarrollado con tecnologías mode
 ```sql
 CREATE DATABASE biblioteca;
 ```
-
-2. **Configurar las credenciales** en `backend/apirest/src/main/resources/application.properties`:
-```properties
-spring.datasource.username=tu_usuario
-spring.datasource.password=tu_password
-```
-
 ### Instalación del Backend
 
 1. **Navegar al directorio del backend:**
@@ -196,22 +189,6 @@ npm run build
 
 # Ejecutar tests
 npm test
-```
-
-## 🚀 Despliegue
-
-### Backend (Producción)
-```bash
-cd backend/apirest
-mvn clean package
-java -jar target/apirest-0.0.1-SNAPSHOT.jar
-```
-
-### Frontend (Producción)
-```bash
-cd Frontend
-npm run build
-# Servir la carpeta build con un servidor web
 ```
 
 ## 📊 Características Técnicas
