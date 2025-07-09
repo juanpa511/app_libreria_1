@@ -1,5 +1,8 @@
 # Library App - Sistema de Gestión de Biblioteca
 
+Video:
+Ejecucion de pruebas en el video adjunto en esta carpera llamada Front
+
 ## 📚 Descripción
 
 Library App es una aplicación web moderna desarrollada con React.js que permite la gestión completa de una biblioteca digital. La aplicación incluye funcionalidades avanzadas para lectores y administradores, con un sistema de autenticación seguro basado en JWT y una interfaz de usuario intuitiva.
@@ -38,7 +41,7 @@ Library App es una aplicación web moderna desarrollada con React.js que permite
 - **Spring Boot** - Framework backend robusto
 - **Spring Security** - Autenticación y autorización
 - **JWT** - Tokens de autenticación seguros
-- **MySQL/PostgreSQL** - Base de datos relacional
+- **MySQL** - Base de datos relacional
 
 ## 📁 Estructura del Proyecto
 
@@ -234,8 +237,4 @@ Este proyecto corresponde a la **Evaluación 3 (40%)** de la asignatura **Electi
 ## 👨‍💻 Autor
 
 Desarrollado Por Juan Maldonado (Desarrollador Frontend) y Juan Meza (Desarrollador Backend)
-
-Video:
-Ejecucion de pruebas en el video adjunto en esta carpera llamada Front
-
 
