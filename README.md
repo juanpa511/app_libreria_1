@@ -50,10 +50,10 @@ Un sistema completo de gestión de biblioteca desarrollado con tecnologías mode
 - Rutas protegidas
 
 ### 📖 Gestión de Libros
-- CRUD completo de libros
+- agregacion de libros
 - Búsqueda y filtrado avanzado
 - Gestión de copias disponibles
-- Categorización por género y autor
+- Categorización por género 
 
 ### 📚 Gestión de Préstamos
 - Creación de préstamos
@@ -63,13 +63,10 @@ Un sistema completo de gestión de biblioteca desarrollado con tecnologías mode
 
 ### 💰 Sistema de Multas
 - Cálculo automático de multas por retraso
-- Gestión de pagos
 - Historial de multas por usuario
 
 ### 👥 Gestión de Usuarios
 - Registro de lectores
-- Perfiles de usuario
-- Historial de actividad
 
 ## 🛠️ Instalación y Configuración
 
